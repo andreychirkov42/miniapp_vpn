@@ -1,0 +1,48 @@
+import { useState } from 'react'
+import { supportActions } from '../data'
+import { IconChat, IconDevices, IconPlus, IconQuestion } from '../icons'
+
+const actionIcon = {
+  plus: IconPlus,
+  question: IconQuestion,
+  devices: IconDevices,
+}
+
+export default function SupportScreen() {
+  const [tab, setTab] = useState<'open' | 'history'>('open')
+
+  return (
+    <div>
+      <div className="menu-card">
+        {supportActions.map((a) => {
+          const Icon = actionIcon[a.icon]
+          return (
+            <button key={a.id} className="menu-row">
+              <span className="menu-row__ic">
+                <Icon size={24} />
+              </span>
+              <span className="menu-row__txt">
+                <div className="menu-row__title">{a.title}</div>
+                <div className="menu-row__sub">{a.sub}</div>
+              </span>
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="segmented">
+        <button className={tab === 'open' ? 'active' : ''} onClick={() => setTab('open')}>
+          Открытые
+        </button>
+        <button className={tab === 'history' ? 'active' : ''} onClick={() => setTab('history')}>
+          История
+        </button>
+      </div>
+
+      <div className="empty">
+        <IconChat size={64} strokeWidth={1.5} />
+        <span>{tab === 'open' ? 'Нет открытых обращений' : 'История обращений пуста'}</span>
+      </div>
+    </div>
+  )
+}
