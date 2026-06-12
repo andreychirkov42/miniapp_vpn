@@ -21,7 +21,7 @@ export default function TrialModal({
           активирован!
         </div>
         <div className="modal__sub">
-          3 дней доступа — подключите устройство, чтобы начать
+          7 дней полного доступа — подключите устройство, чтобы начать
         </div>
         <button className="btn btn-primary" onClick={onConnect} disabled={busy}>
           {busy ? 'Подключаем…' : 'Подключить устройство'}

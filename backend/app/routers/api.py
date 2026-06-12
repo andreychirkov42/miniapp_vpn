@@ -28,6 +28,12 @@ async def get_me(
 ):
     try:
         raws = await client.get_users_by_telegram_id(user.telegram_id)
+        # подмешиваем число подключённых устройств (HWID) в каждую подписку
+        for r in raws:
+            try:
+                r["_devices_used"] = await client.get_hwid_count(r.get("uuid"))
+            except RemnawaveError:
+                r["_devices_used"] = 0
     except RemnawaveError as exc:
         raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc
     return MeResponse(telegram_id=user.telegram_id, subscriptions=service.map_all(raws))

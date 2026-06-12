@@ -190,6 +190,46 @@ export const IconDevices = ({ size, ...p }: P) => (
   </svg>
 )
 
+export const IconShieldCheck = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+)
+
+export const IconBolt = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <path d="M13 2 4 14h7l-1 8 9-12h-7z" />
+  </svg>
+)
+
+export const IconGlobe = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18z" />
+  </svg>
+)
+
+export const IconLock = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <rect x="4.5" y="10.5" width="15" height="10" rx="2.5" />
+    <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />
+  </svg>
+)
+
+export const IconDownload = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <path d="M12 3v12M7 10l5 5 5-5" />
+    <path d="M4 21h16" />
+  </svg>
+)
+
+export const IconInfinity = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <path d="M6.5 8.5a3.5 3.5 0 1 0 0 7c2 0 3-1.5 5.5-3.5s3.5-3.5 5.5-3.5a3.5 3.5 0 1 1 0 7c-2 0-3-1.5-5.5-3.5S8.5 8.5 6.5 8.5z" />
+  </svg>
+)
+
 /* Akenai "AK" logo mark — bold angular monogram */
 export const LogoAK = (p: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 280 210" fill="currentColor" {...p}>

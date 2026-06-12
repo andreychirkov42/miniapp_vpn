@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supportActions } from '../data'
-import { IconChat, IconDevices, IconPlus, IconQuestion } from '../icons'
+import { haptic } from '../lib/telegram'
+import { IconChat, IconChevronRight, IconDevices, IconPlus, IconQuestion } from '../icons'
 
 const actionIcon = {
   plus: IconPlus,
@@ -17,13 +18,16 @@ export default function SupportScreen() {
         {supportActions.map((a) => {
           const Icon = actionIcon[a.icon]
           return (
-            <button key={a.id} className="menu-row">
+            <button key={a.id} className="menu-row" onClick={() => haptic('light')}>
               <span className="menu-row__ic">
                 <Icon size={24} />
               </span>
               <span className="menu-row__txt">
                 <div className="menu-row__title">{a.title}</div>
                 <div className="menu-row__sub">{a.sub}</div>
+              </span>
+              <span className="menu-row__chev">
+                <IconChevronRight size={20} />
               </span>
             </button>
           )

@@ -9,6 +9,7 @@ type TgWebApp = {
   openTelegramLink: (url: string) => void
   HapticFeedback?: { impactOccurred: (s: string) => void; notificationOccurred: (s: string) => void }
   colorScheme?: string
+  platform?: string
 }
 
 export function tg(): TgWebApp | null {
@@ -41,4 +42,15 @@ export function openExternal(url: string): void {
   const w = tg()
   if (w?.openLink) w.openLink(url)
   else window.open(url, '_blank')
+}
+
+export function getUserId(): number | null {
+  return tg()?.initDataUnsafe?.user?.id ?? null
+}
+
+export function shareToTelegram(url: string, text: string): void {
+  const share = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
+  const w = tg()
+  if (w?.openTelegramLink) w.openTelegramLink(share)
+  else window.open(share, '_blank')
 }

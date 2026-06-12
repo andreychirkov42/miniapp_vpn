@@ -31,18 +31,64 @@ def _iso(dt: datetime) -> str:
 # Real client                                                                 #
 # --------------------------------------------------------------------------- #
 class RealRemnawave:
+    """Talks to a live Remnawave panel.
+
+    Auth: prefers a static API token (REMNAWAVE_TOKEN). If absent, logs in with
+    admin username/password (REMNAWAVE_USERNAME/PASSWORD) via POST /auth/login,
+    caches the returned JWT, and re-authenticates once on a 401.
+    """
+
     def __init__(self, settings: Settings):
         self._base = settings.api_base
-        self._headers = {
-            "Authorization": f"Bearer {settings.remnawave_token}",
-            "Content-Type": "application/json",
-        }
+        self._static_token = settings.remnawave_token or None
+        self._username = settings.remnawave_username or None
+        self._password = settings.remnawave_password or None
+        self._token: str | None = self._static_token
+
+    async def _login(self, client: httpx.AsyncClient) -> str:
+        if not (self._username and self._password):
+            raise RemnawaveError(
+                "no REMNAWAVE_TOKEN and no REMNAWAVE_USERNAME/PASSWORD configured"
+            )
+        resp = await client.post(
+            f"{self._base}/auth/login",
+            json={"username": self._username, "password": self._password},
+        )
+        if resp.status_code >= 400:
+            raise RemnawaveError(f"auth/login -> {resp.status_code}: {resp.text}")
+        data = resp.json()
+        body = data.get("response", data) if isinstance(data, dict) else {}
+        token = body.get("accessToken") or body.get("token")
+        if not token:
+            raise RemnawaveError("login succeeded but no accessToken in response")
+        return token
+
+    async def _ensure_token(self, client: httpx.AsyncClient) -> str:
+        if self._token is None:
+            self._token = await self._login(client)
+        return self._token
 
     async def _request(self, method: str, path: str, json: dict | None = None):
         async with httpx.AsyncClient(timeout=20) as client:
+            token = await self._ensure_token(client)
             resp = await client.request(
-                method, f"{self._base}{path}", headers=self._headers, json=json
+                method,
+                f"{self._base}{path}",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json=json,
             )
+            # JWT expired / revoked — re-login once (only when using login auth)
+            if resp.status_code == 401 and self._static_token is None:
+                self._token = await self._login(client)
+                resp = await client.request(
+                    method,
+                    f"{self._base}{path}",
+                    headers={
+                        "Authorization": f"Bearer {self._token}",
+                        "Content-Type": "application/json",
+                    },
+                    json=json,
+                )
         if resp.status_code >= 400:
             raise RemnawaveError(f"{method} {path} -> {resp.status_code}: {resp.text}")
         if not resp.content:
@@ -66,6 +112,12 @@ class RealRemnawave:
         # Remnawave PATCH /users carries the uuid inside the body
         return await self._request("PATCH", "/users", json=payload)
 
+    async def get_hwid_count(self, uuid: str) -> int:
+        res = await self._request("GET", f"/hwid/devices/{uuid}")
+        if isinstance(res, dict):
+            return int(res.get("total") or 0)
+        return 0
+
 
 # --------------------------------------------------------------------------- #
 # Mock client (in-memory, per Telegram id)                                    #
@@ -85,7 +137,7 @@ class MockRemnawave:
                 name="Pro",
                 traffic_limit=0,
                 used=0,
-                expire=_now() + timedelta(days=3),
+                expire=_now() + timedelta(days=self._settings.trial_days),
                 device_limit=0,
                 domain=domain,
             ),
@@ -95,7 +147,7 @@ class MockRemnawave:
                 name="Whitelist",
                 traffic_limit=5 * gb,
                 used=0,
-                expire=_now() + timedelta(days=3),
+                expire=_now() + timedelta(days=self._settings.trial_days),
                 device_limit=0,
                 domain=domain,
             ),
@@ -156,6 +208,9 @@ class MockRemnawave:
             if key in payload:
                 target[key] = payload[key]
         return target
+
+    async def get_hwid_count(self, uuid: str) -> int:
+        return int(self._devices.get(uuid, 0)) if hasattr(self, "_devices") else 0
 
 
 def make_client(settings: Settings):

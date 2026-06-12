@@ -1,16 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import type { ConfigResponse, Subscription } from '../lib/types'
-import { openExternal } from '../lib/telegram'
+import PlatformInstall from './PlatformInstall'
 import { IconClose, IconGear } from '../icons'
-
-const CLIENT_LABELS: Record<string, string> = {
-  v2raytun: 'v2RayTun',
-  happ: 'Happ',
-  streisand: 'Streisand',
-  hiddify: 'Hiddify',
-  clash: 'Clash',
-}
 
 export default function ConfigModal({
   sub,
@@ -55,7 +47,7 @@ export default function ConfigModal({
         <div className="modal__title" style={{ fontSize: 22 }}>
           {title}
         </div>
-        <div className="modal__sub">Подписка «{sub.name}». Скопируйте ссылку или откройте в приложении.</div>
+        <div className="modal__sub">Подписка «{sub.name}». Установите приложение и подключите её.</div>
 
         {error && <div className="cfg-error">{error}</div>}
 
@@ -66,13 +58,7 @@ export default function ConfigModal({
               <b>{copied ? 'Скопировано' : 'Копировать'}</b>
             </button>
 
-            <div className="cfg-clients">
-              {Object.entries(cfg.deeplinks).map(([key, url]) => (
-                <button key={key} className="cfg-client" onClick={() => openExternal(url)}>
-                  {CLIENT_LABELS[key] ?? key}
-                </button>
-              ))}
-            </div>
+            <PlatformInstall subscriptionUrl={cfg.subscription_url} />
           </>
         )}
 

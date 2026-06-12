@@ -46,20 +46,42 @@ export const supportActions: SupportAction[] = [
   },
 ]
 
-export type Platform = {
-  id: string
-  label: string
-  url: string // store/download link — заполняется позже
+export type PlatformId = 'ios' | 'android' | 'windows' | 'macos' | 'androidtv' | 'linux'
+
+export type PlatformApp = {
+  id: PlatformId
+  label: string // показывается пользователю: "iPhone / iPad"
+  short: string // краткое: "iOS"
+  app: string // название клиента (1 на платформу) — заменишь на финальный
+  downloadUrl: string // ссылка на скачивание приложения — заполнишь
+  // шаблон диплинка импорта подписки; {url} → subscription_url
+  deeplink: string
 }
 
-export const installPlatforms: Platform[] = [
-  { id: 'ios', label: 'iPhone / iPad', url: '' },
-  { id: 'android', label: 'Android', url: '' },
-  { id: 'windows', label: 'Windows', url: '' },
-  { id: 'macos', label: 'macOS', url: '' },
-  { id: 'androidtv', label: 'Android TV', url: '' },
-  { id: 'linux', label: 'Linux', url: '' },
+// Клиенты: RabbitHole на iOS, FlClashX на остальное.
+// downloadUrl — заполнишь ссылками на скачивание. deeplink-схемы помечены ниже — подтверди.
+const FLCLASH_DEEPLINK = 'clash://install-config?url={url}' // FlClashX (Clash-based) — параметр url кодируется
+const RABBITHOLE_DEEPLINK = 'rabbithole://import/{url}' // ⚠️ подтвердить точную схему RabbitHole
+
+export const platformApps: PlatformApp[] = [
+  { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: '', deeplink: RABBITHOLE_DEEPLINK },
+  { id: 'android', label: 'Android', short: 'Android', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
+  { id: 'windows', label: 'Windows', short: 'Windows', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
+  { id: 'macos', label: 'macOS', short: 'macOS', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
+  { id: 'androidtv', label: 'Android TV', short: 'Android TV', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
+  { id: 'linux', label: 'Linux', short: 'Linux', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
 ]
+
+export const BOT_USERNAME = 'bezgraniz_cabinet_bot'
+export const REFERRAL_BONUS_DAYS = 10
+
+export type Payment = {
+  id: string
+  date: string
+  amount: string
+  title: string
+  status: 'ok' | 'pending' | 'failed'
+}
 
 export type ProfileItem = {
   id: string
@@ -78,16 +100,15 @@ export type ProfileItem = {
     | 'card'
 }
 
-export const profileItems: ProfileItem[] = [
+// Единый список профиля (без секций). Без «Вход в систему» и «Добавить на рабочий стол».
+export const profileList: ProfileItem[] = [
   { id: 'promo', title: 'Применить промокод', icon: 'gift' },
-  { id: 'news', title: 'Новости', icon: 'rss' },
-  { id: 'channel', title: 'Канал', icon: 'send' },
-  { id: 'privacy', title: 'Политика конфиденциальности', icon: 'shield' },
-  { id: 'terms', title: 'Пользовательское соглашение', icon: 'doc' },
   { id: 'referral', title: 'Реферальная система', icon: 'heart' },
   { id: 'partner', title: 'Партнёрская программа', icon: 'wallet' },
-  { id: 'desktop', title: 'Добавить на рабочий стол', icon: 'export' },
-  { id: 'faq', title: 'Часто задаваемые вопросы', icon: 'question' },
-  { id: 'login', title: 'Вход в систему', icon: 'login' },
   { id: 'payments', title: 'Платежи', icon: 'card' },
+  { id: 'news', title: 'Новости', icon: 'rss' },
+  { id: 'channel', title: 'Канал', icon: 'send' },
+  { id: 'faq', title: 'Часто задаваемые вопросы', icon: 'question' },
+  { id: 'privacy', title: 'Политика конфиденциальности', icon: 'shield' },
+  { id: 'terms', title: 'Пользовательское соглашение', icon: 'doc' },
 ]

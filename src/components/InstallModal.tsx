@@ -1,16 +1,13 @@
-import { useState } from 'react'
-import { installPlatforms } from '../data'
-import { openExternal } from '../lib/telegram'
+import PlatformInstall from './PlatformInstall'
 import { IconClose, IconDevices } from '../icons'
 
-export default function InstallModal({ onClose }: { onClose: () => void }) {
-  const [hint, setHint] = useState<string | null>(null)
-
-  const pick = (url: string, label: string) => {
-    if (url) openExternal(url)
-    else setHint(`Ссылка для «${label}» скоро будет добавлена`)
-  }
-
+export default function InstallModal({
+  subscriptionUrl,
+  onClose,
+}: {
+  subscriptionUrl?: string
+  onClose: () => void
+}) {
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal modal--config" onClick={(e) => e.stopPropagation()}>
@@ -23,17 +20,9 @@ export default function InstallModal({ onClose }: { onClose: () => void }) {
         <div className="modal__title" style={{ fontSize: 22 }}>
           Установка приложения
         </div>
-        <div className="modal__sub">Выберите устройство, на которое хотите подключить VPN</div>
+        <div className="modal__sub">Мы определили вашу платформу — установите приложение для неё</div>
 
-        <div className="cfg-clients">
-          {installPlatforms.map((p) => (
-            <button key={p.id} className="cfg-client" onClick={() => pick(p.url, p.label)}>
-              {p.label}
-            </button>
-          ))}
-        </div>
-
-        {hint && <div className="cfg-hint">{hint}</div>}
+        <PlatformInstall subscriptionUrl={subscriptionUrl} />
 
         <button className="btn-text" onClick={onClose}>
           Закрыть

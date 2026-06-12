@@ -23,7 +23,7 @@
 
   --shadow-sm: 0 2px 8px rgba(13, 31, 23, 0.06);
   --shadow-md: 0 8px 24px rgba(13, 31, 23, 0.08);
-  --shadow-green: 0 8px 20px rgba(22, 179, 100, 0.28);
+  --shadow-green: 0 6px 16px rgba(14, 162, 87, 0.22);
 
   --radius-card: 20px;
   --radius-md: 14px;
@@ -185,11 +185,11 @@ button {
 .btn-primary {
   background: linear-gradient(180deg, var(--green) 0%, var(--green-strong) 100%);
   color: #fff;
-  box-shadow: var(--shadow-green);
+  box-shadow: var(--shadow-green), inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .btn-primary:active {
-  box-shadow: 0 4px 12px rgba(22, 179, 100, 0.26);
+  box-shadow: 0 3px 10px rgba(14, 162, 87, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-secondary {
@@ -294,20 +294,137 @@ button {
   transform: translateY(1px);
 }
 
-/* ---------- Home (minimal CTA) ---------- */
-.home-actions {
+/* ---------- Home (hero + features + CTA) ---------- */
+.home {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 60vh;
-  padding-bottom: 30px;
+  gap: 24px;
+  padding: 10px 0 22px;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+}
+
+.hero__mark {
+  width: 76px;
+  height: 76px;
+  border-radius: 24px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  box-shadow: var(--shadow-green), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.hero__logo {
+  width: 104px;
+  height: 104px;
+  border-radius: 26px;
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+.hero__title {
+  margin: 2px 0 0;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  max-width: 300px;
+}
+
+.hero__sub {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text-dim);
+  max-width: 290px;
+}
+
+.features {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.feature__ic {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--green-soft);
+  color: var(--green-strong);
+}
+
+.feature__label {
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  white-space: pre-line;
+  color: var(--text);
+}
+
+/* одиночная плашка преимущества — горизонтальная, по центру */
+.feature--solo {
+  flex-direction: row;
+  align-self: center;
+  gap: 12px;
+  padding: 12px 20px 12px 14px;
+}
+
+.feature--solo .feature__label {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+/* плашка-показатель активной подписки */
+.feature--stat {
+  gap: 6px;
+}
+
+.feature__val {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: var(--text);
+}
+
+.feature__cap {
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text-dim);
 }
 
 .home-cta {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 14px;
   width: 100%;
 }
 
@@ -579,6 +696,11 @@ button {
   margin-top: 2px;
 }
 
+.menu-row__chev {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
 .segmented {
   display: flex;
   gap: 4px;
@@ -627,34 +749,91 @@ button {
   color: var(--text-dim);
 }
 
-/* ---------- Profile list ---------- */
-.list {
+/* ---------- Profile (grouped) ---------- */
+.profile {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding-top: 4px;
+  gap: 18px;
+  padding-top: 6px;
 }
 
-.list-row {
+.profile-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-align: left;
-  padding: 13px 15px;
-  border-radius: var(--radius-md);
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
 
-.list-row:active {
+.profile-head__avatar {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(155deg, var(--green) 0%, var(--green-deep) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.profile-head__name {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.profile-head__sub {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.group__title {
+  padding: 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.group__card {
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.group-row {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+}
+
+.group-row + .group-row {
+  border-top: 1px solid var(--border);
+}
+
+.group-row:active {
   background: var(--surface-2);
 }
 
-.list-row__ic {
+.group-row__ic {
   flex: 0 0 auto;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 11px;
   display: grid;
   place-items: center;
@@ -662,13 +841,13 @@ button {
   color: var(--green-strong);
 }
 
-.list-row__title {
+.group-row__title {
   flex: 1 1 auto;
   font-size: 15px;
   font-weight: 600;
 }
 
-.list-row__chev {
+.group-row__chev {
   flex: 0 0 auto;
   color: var(--text-muted);
 }
@@ -886,4 +1065,147 @@ button {
   color: var(--danger);
   font-size: 14px;
   text-align: center;
+}
+
+/* ---------- Modal input / promo ---------- */
+.modal-input {
+  width: 100%;
+  height: 50px;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+.modal-input:focus {
+  border-color: var(--green);
+  background: var(--surface);
+}
+
+.modal-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+/* ---------- Payments ---------- */
+.pay-empty {
+  width: 100%;
+  padding: 28px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 15px;
+  text-align: center;
+}
+
+.pay-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pay-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  text-align: left;
+}
+
+.pay-row__title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pay-row__date {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.pay-row__amount {
+  flex: 0 0 auto;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pay-row__amount--ok {
+  color: var(--green-deep);
+}
+
+.pay-row__amount--pending {
+  color: var(--text-dim);
+}
+
+.pay-row__amount--failed {
+  color: var(--danger);
+}
+
+/* ---------- Platform install ---------- */
+.pinstall {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pinstall__pick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-dim);
+}
+
+.pinstall__pick b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.pinstall__pick svg {
+  color: var(--text-muted);
+}
+
+.pinstall__menu {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.pinstall__opt {
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pinstall__opt--active {
+  background: var(--green-soft);
+  border-color: transparent;
+  color: var(--green-deep);
+}
+
+.pinstall__opt:active {
+  background: var(--green-soft-2);
 }

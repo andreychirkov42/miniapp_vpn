@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     mock_subscription_url: str = ""
 
     # Tariff defaults
-    trial_days: int = 3
-    trial_traffic_gb: int = 5
+    trial_days: int = 7
+    trial_traffic_gb: int = 100
+    trial_device_limit: int = 3
     renew_days: int = 30
 
     # Misc

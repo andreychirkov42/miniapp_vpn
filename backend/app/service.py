@@ -36,7 +36,7 @@ def map_subscription(raw: dict, index: int) -> Subscription:
     status = str(raw.get("status") or "ACTIVE").upper()
     expired = status == "EXPIRED" or (expire_dt is not None and expire_dt < now)
 
-    name = raw.get("_name") or raw.get("tag") or raw.get("description") or "VPN"
+    name = raw.get("_name") or raw.get("tag") or raw.get("description") or "Доступ"
     label = raw.get("_label") or ("Основная" if index == 0 else f"Подписка #{raw.get('shortUuid', '')}")
     pro = bool(raw.get("_name") == "Pro" or name == "Pro" or (limit == 0 and index == 0))
 
@@ -79,7 +79,7 @@ def build_trial_payload(settings: Settings, telegram_id: int) -> dict:
         "trafficLimitBytes": settings.trial_traffic_gb * GB,
         "trafficLimitStrategy": "NO_RESET",
         "expireAt": expire.isoformat().replace("+00:00", "Z"),
-        "hwidDeviceLimit": 0,
+        "hwidDeviceLimit": settings.trial_device_limit,
         # carried through by the mock so the demo matches the screenshots
         "_label": "Подписка #100564",
         "_name": "Whitelist",

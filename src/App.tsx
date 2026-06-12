@@ -6,7 +6,10 @@ import ConfigModal from './components/ConfigModal'
 import InstallModal from './components/InstallModal'
 import HomeScreen from './screens/HomeScreen'
 import SupportScreen from './screens/SupportScreen'
-import ProfileScreen from './screens/ProfileScreen'
+import ProfileScreen, { type ProfileModal } from './screens/ProfileScreen'
+import PromoModal from './components/PromoModal'
+import ReferralModal from './components/ReferralModal'
+import PaymentsModal from './components/PaymentsModal'
 import { useSubscriptions } from './hooks/useSubscriptions'
 import { initTelegram, haptic } from './lib/telegram'
 import type { Subscription } from './lib/types'
@@ -18,6 +21,7 @@ export default function App() {
   const [showInstall, setShowInstall] = useState(false)
   const [configSub, setConfigSub] = useState<Subscription | null>(null)
   const [busyTrial, setBusyTrial] = useState(false)
+  const [profileModal, setProfileModal] = useState<ProfileModal | null>(null)
 
   useEffect(() => {
     initTelegram()
@@ -55,13 +59,15 @@ export default function App() {
         {!loading && error && <CenterMsg text={`Ошибка: ${error}`} onRetry={reload} />}
         {!loading && !error && tab === 'home' && (
           <HomeScreen
+            sub={subs.find((s) => !s.expired) ?? null}
             onTryFree={handleTryFree}
             onAddSubscription={handleAddSubscription}
+            onConnect={() => setConfigSub(subs.find((s) => !s.expired) ?? subs[0] ?? null)}
             busyTrial={busyTrial}
           />
         )}
         {!loading && !error && tab === 'support' && <SupportScreen />}
-        {!loading && !error && tab === 'profile' && <ProfileScreen />}
+        {!loading && !error && tab === 'profile' && <ProfileScreen onOpenModal={setProfileModal} />}
       </main>
 
       <BottomNav active={tab} onChange={setTab} />
@@ -76,10 +82,18 @@ export default function App() {
           onClose={() => setTrialSuccess(false)}
         />
       )}
-      {showInstall && <InstallModal onClose={() => setShowInstall(false)} />}
+      {showInstall && (
+        <InstallModal
+          subscriptionUrl={subs[0]?.subscription_url}
+          onClose={() => setShowInstall(false)}
+        />
+      )}
       {configSub && (
         <ConfigModal sub={configSub} title="Добавить подписку" onClose={() => setConfigSub(null)} />
       )}
+      {profileModal === 'promo' && <PromoModal onClose={() => setProfileModal(null)} />}
+      {profileModal === 'referral' && <ReferralModal onClose={() => setProfileModal(null)} />}
+      {profileModal === 'payments' && <PaymentsModal onClose={() => setProfileModal(null)} />}
     </div>
   )
 }
