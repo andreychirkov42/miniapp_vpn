@@ -91,56 +91,10 @@ button {
   z-index: 0;
 }
 
-.tg-header,
 .content,
 .nav {
   position: relative;
   z-index: 1;
-}
-
-/* ---------- Telegram-style header ---------- */
-.tg-header {
-  flex: 0 0 auto;
-  height: var(--header-h);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px 4px;
-}
-
-.tg-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 16px;
-  border-radius: 19px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
-  color: var(--text);
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.tg-pill--icons {
-  padding: 0 4px;
-  gap: 0;
-}
-
-.tg-pill--icons .tg-pill__sep {
-  width: 1px;
-  height: 20px;
-  background: var(--border-2);
-  margin: 0 2px;
-}
-
-.tg-pill__btn {
-  width: 40px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  color: var(--text-dim);
 }
 
 /* ---------- Scrollable content ---------- */

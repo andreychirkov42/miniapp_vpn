@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import Header from './components/Header'
 import BottomNav, { type Tab } from './components/BottomNav'
 import TrialModal from './components/TrialModal'
 import ConfigModal from './components/ConfigModal'
@@ -52,8 +51,6 @@ export default function App() {
 
   return (
     <div className="app">
-      <Header />
-
       <main className={`content ${tab === 'home' ? 'content--center' : ''}`}>
         {loading && <CenterMsg text="Загрузка…" />}
         {!loading && error && <CenterMsg text={`Ошибка: ${error}`} onRetry={reload} />}
