@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
 import { platformApps } from '../data'
 import { detectPlatform } from '../lib/platform'
-import { openExternal } from '../lib/telegram'
+import { openDeeplink, openExternal } from '../lib/telegram'
 import { IconCheck, IconDownload, IconPlug } from '../icons'
 
-// Двухшаговый мастер подключения:
-//  1) «Установить» — скачать приложение под платформу → «Уже установил».
-//  2) «Добавить подписку» — импорт конфига в клиент по deeplink (ссылка не показывается).
+// Подключение в один тап: основное действие — «Добавить подписку» (импорт конфига
+// в клиент по deeplink). Если клиент ещё не установлен — вторичный шаг установки.
 export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?: string }) {
   const pid = useMemo(detectPlatform, [])
-  const [step, setStep] = useState<'install' | 'add'>('install')
+  const [step, setStep] = useState<'add' | 'install'>('add')
   const [hint, setHint] = useState<string | null>(null)
 
   const app = platformApps.find((p) => p.id === pid) ?? platformApps[0]
@@ -20,64 +19,55 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
   }
 
   const connect = () => {
-    if (!subscriptionUrl) return
+    if (!subscriptionUrl) {
+      setHint('Подписка ещё не готова — обновите экран чуть позже')
+      return
+    }
     // если {url} стоит после "=" (query-параметр) — кодируем; иначе вставляем как есть
     const i = app.deeplink.indexOf('{url}')
-    const value = i > 0 && app.deeplink[i - 1] === '=' ? encodeURIComponent(subscriptionUrl) : subscriptionUrl
-    openExternal(app.deeplink.replace('{url}', value))
+    const value =
+      i > 0 && app.deeplink[i - 1] === '=' ? encodeURIComponent(subscriptionUrl) : subscriptionUrl
+    openDeeplink(app.deeplink.replace('{url}', value))
+  }
+
+  if (step === 'install') {
+    return (
+      <div className="pinstall">
+        <div className="pinstall__lead">
+          Установите клиент <b>{app.app}</b> для {app.label}, затем вернитесь и добавьте подписку.
+        </div>
+        <button className="btn btn-primary btn-lg" onClick={download}>
+          <IconDownload size={22} />
+          Установить {app.app}
+        </button>
+        <button className="btn btn-secondary btn-lg" onClick={() => { setStep('add'); setHint(null) }}>
+          <IconPlug size={20} />
+          Клиент установлен — добавить подписку
+        </button>
+        {hint && <div className="cfg-hint">{hint}</div>}
+      </div>
+    )
   }
 
   return (
     <div className="pinstall">
-      <div className="stepper">
-        <div className={`stepper__item ${step === 'add' ? 'is-done' : 'is-on'}`}>
-          <span className="stepper__num">{step === 'add' ? <IconCheck size={14} /> : '1'}</span>
-          <span className="stepper__label">Установить</span>
-        </div>
-        <span className={`stepper__line ${step === 'add' ? 'is-filled' : ''}`} />
-        <div className={`stepper__item ${step === 'add' ? 'is-on' : ''}`}>
-          <span className="stepper__num">2</span>
-          <span className="stepper__label">Подписка</span>
+      <div className="pinstall__ready">
+        <span className="pinstall__ready-ic">
+          <IconCheck size={20} />
+        </span>
+        <div className="pinstall__ready-text">
+          <span className="pinstall__ready-title">Подписка готова</span>
+          <span className="pinstall__ready-note">Откроется в {app.app} в один тап</span>
         </div>
       </div>
 
-      {step === 'install' ? (
-        <>
-          <button className="btn btn-primary btn-lg" onClick={download}>
-            <IconDownload size={22} />
-            Установить {app.app}
-          </button>
-          <button
-            className="btn btn-secondary btn-lg"
-            onClick={() => {
-              setStep('add')
-              setHint(null)
-            }}
-          >
-            Уже установил
-          </button>
-        </>
-      ) : (
-        <>
-          <div className="pinstall__ready">
-            <span className="pinstall__ready-ic">
-              <IconCheck size={20} />
-            </span>
-            <div className="pinstall__ready-text">
-              <span className="pinstall__ready-title">{app.app} установлен</span>
-              <span className="pinstall__ready-note">Подключим подписку в один тап</span>
-            </div>
-          </div>
-
-          <button className="btn btn-primary btn-lg" onClick={connect} disabled={!subscriptionUrl}>
-            <IconPlug size={20} />
-            Добавить подписку
-          </button>
-          <button className="btn-text" onClick={() => setStep('install')}>
-            Назад к установке
-          </button>
-        </>
-      )}
+      <button className="btn btn-primary btn-lg" onClick={connect} disabled={!subscriptionUrl}>
+        <IconPlug size={20} />
+        Добавить подписку
+      </button>
+      <button className="btn-text" onClick={() => { setStep('install'); setHint(null) }}>
+        Клиент ещё не установлен?
+      </button>
 
       {hint && <div className="cfg-hint">{hint}</div>}
     </div>

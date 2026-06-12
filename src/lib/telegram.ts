@@ -44,6 +44,29 @@ export function openExternal(url: string): void {
   else window.open(url, '_blank')
 }
 
+// Открыть deeplink VPN-клиента (flclashx://, rabbithole://, v2raytun:// …).
+// Telegram openLink() умеет только http(s) и кастомные app-схемы молча игнорирует,
+// поэтому для них запускаем приложение прямой навигацией из WebView.
+export function openDeeplink(url: string): void {
+  if (/^https?:\/\//i.test(url)) {
+    openExternal(url)
+    return
+  }
+  try {
+    window.location.href = url
+  } catch {
+    window.open(url, '_blank')
+  }
+}
+
+// Открыть Telegram-бота кабинета (когда мини-апп запущен вне Telegram).
+export function openBot(username: string): void {
+  const url = `https://t.me/${username}`
+  const w = tg()
+  if (w?.openTelegramLink) w.openTelegramLink(url)
+  else window.open(url, '_blank')
+}
+
 export function getUserId(): number | null {
   return tg()?.initDataUnsafe?.user?.id ?? null
 }

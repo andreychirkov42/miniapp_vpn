@@ -933,6 +933,41 @@ button {
   padding: 24px;
 }
 
+/* ---------- Need Telegram screen ---------- */
+.need-tg {
+  max-width: 340px;
+  margin: 0 auto;
+  gap: 10px;
+}
+.need-tg__ic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  color: #fff;
+  background: linear-gradient(135deg, #12b866, #0a8f4d);
+  box-shadow: 0 10px 26px rgba(14, 162, 87, 0.32);
+  margin-bottom: 6px;
+}
+.need-tg__title {
+  margin: 0;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--text);
+}
+.need-tg__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+.need-tg .btn {
+  margin-top: 8px;
+  align-self: stretch;
+}
+
 /* ---------- Config modal ---------- */
 .modal--config {
   position: relative;

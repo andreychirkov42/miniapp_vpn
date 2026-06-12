@@ -10,8 +10,15 @@ import PromoModal from './components/PromoModal'
 import ReferralModal from './components/ReferralModal'
 import PaymentsModal from './components/PaymentsModal'
 import { useSubscriptions } from './hooks/useSubscriptions'
-import { initTelegram, haptic } from './lib/telegram'
+import { initTelegram, haptic, openBot, tg } from './lib/telegram'
+import { BOT_USERNAME } from './data'
+import { IconRocket } from './icons'
 import type { Subscription } from './lib/types'
+
+// Ошибка аутентификации = мини-апп открыт вне Telegram (нет подписанного initData).
+function isAuthError(message: string): boolean {
+  return !tg() || /initData|Telegram|unauthorized|401/i.test(message)
+}
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home')
@@ -53,7 +60,12 @@ export default function App() {
     <div className="app">
       <main className={`content ${tab === 'home' ? 'content--center' : ''}`}>
         {loading && <CenterMsg text="Загрузка…" />}
-        {!loading && error && <CenterMsg text={`Ошибка: ${error}`} onRetry={reload} />}
+        {!loading && error &&
+          (isAuthError(error) ? (
+            <NeedTelegram />
+          ) : (
+            <CenterMsg text={`Ошибка: ${error}`} onRetry={reload} />
+          ))}
         {!loading && !error && tab === 'home' && (
           <HomeScreen
             sub={subs.find((s) => !s.expired) ?? null}
@@ -91,6 +103,26 @@ export default function App() {
       {profileModal === 'promo' && <PromoModal onClose={() => setProfileModal(null)} />}
       {profileModal === 'referral' && <ReferralModal onClose={() => setProfileModal(null)} />}
       {profileModal === 'payments' && <PaymentsModal onClose={() => setProfileModal(null)} />}
+    </div>
+  )
+}
+
+// Экран при запуске вне Telegram: мини-апп получает подписанный initData только
+// внутри Telegram, поэтому просим открыть кабинет через бота.
+function NeedTelegram() {
+  return (
+    <div className="center-msg need-tg">
+      <span className="need-tg__ic">
+        <IconRocket size={40} />
+      </span>
+      <h2 className="need-tg__title">Откройте через Telegram</h2>
+      <p className="need-tg__text">
+        Кабинет работает внутри Telegram. Запустите его заново через бота — по кнопке
+        «Кабинет» или меню-кнопке.
+      </p>
+      <button className="btn btn-primary btn-lg" onClick={() => openBot(BOT_USERNAME)}>
+        Открыть бота
+      </button>
     </div>
   )
 }
