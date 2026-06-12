@@ -15,7 +15,6 @@ export default function ConfigModal({
 }) {
   const [cfg, setCfg] = useState<ConfigResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [copied, setCopied] = useState(false)
 
   useEffect(() => {
     api
@@ -23,17 +22,6 @@ export default function ConfigModal({
       .then(setCfg)
       .catch((e) => setError((e as Error).message))
   }, [sub.uuid])
-
-  const copy = async () => {
-    if (!cfg) return
-    try {
-      await navigator.clipboard.writeText(cfg.subscription_url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-      /* ignore */
-    }
-  }
 
   return (
     <div className="overlay" onClick={onClose}>
@@ -51,16 +39,7 @@ export default function ConfigModal({
 
         {error && <div className="cfg-error">{error}</div>}
 
-        {cfg && (
-          <>
-            <button className="cfg-url" onClick={copy}>
-              <span>{cfg.subscription_url}</span>
-              <b>{copied ? 'Скопировано' : 'Копировать'}</b>
-            </button>
-
-            <PlatformInstall subscriptionUrl={cfg.subscription_url} />
-          </>
-        )}
+        {cfg && <PlatformInstall subscriptionUrl={cfg.subscription_url} />}
 
         <button className="btn-text" onClick={onClose}>
           Закрыть

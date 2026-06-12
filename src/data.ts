@@ -46,7 +46,7 @@ export const supportActions: SupportAction[] = [
   },
 ]
 
-export type PlatformId = 'ios' | 'android' | 'windows' | 'macos' | 'androidtv' | 'linux'
+export type PlatformId = 'ios' | 'android' | 'windows' | 'macos'
 
 export type PlatformApp = {
   id: PlatformId
@@ -60,16 +60,14 @@ export type PlatformApp = {
 
 // Клиенты: RabbitHole на iOS, FlClashX на остальное.
 // downloadUrl — заполнишь ссылками на скачивание. deeplink-схемы помечены ниже — подтверди.
-const FLCLASH_DEEPLINK = 'clash://install-config?url={url}' // FlClashX (Clash-based) — параметр url кодируется
-const RABBITHOLE_DEEPLINK = 'rabbithole://import/{url}' // ⚠️ подтвердить точную схему RabbitHole
+const FLCLASH_DEEPLINK = 'flclashx://install-config?url={url}' // FlClashX — url кодируется (стоит после "=")
+const RABBITHOLE_DEEPLINK = 'rabbithole://add/{url}' // RabbitHole iOS — импорт по subscription_url
 
 export const platformApps: PlatformApp[] = [
-  { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: '', deeplink: RABBITHOLE_DEEPLINK },
-  { id: 'android', label: 'Android', short: 'Android', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
-  { id: 'windows', label: 'Windows', short: 'Windows', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
-  { id: 'macos', label: 'macOS', short: 'macOS', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
-  { id: 'androidtv', label: 'Android TV', short: 'Android TV', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
-  { id: 'linux', label: 'Linux', short: 'Linux', app: 'FlClashX', downloadUrl: '', deeplink: FLCLASH_DEEPLINK },
+  { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: 'https://apps.apple.com/ru/app/rabbithole-vpn-client/id6683309629', deeplink: RABBITHOLE_DEEPLINK },
+  { id: 'android', label: 'Android', short: 'Android', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-android-universal.apk', deeplink: FLCLASH_DEEPLINK },
+  { id: 'windows', label: 'Windows', short: 'Windows', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-windows-amd64-setup.exe', deeplink: FLCLASH_DEEPLINK },
+  { id: 'macos', label: 'macOS', short: 'macOS', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-macos-arm64.dmg', deeplink: FLCLASH_DEEPLINK },
 ]
 
 export const BOT_USERNAME = 'bezgraniz_cabinet_bot'

@@ -1115,6 +1115,31 @@ button {
   width: 100%;
 }
 
+.pinstall__steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.pinstall__step {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.pinstall__step--on {
+  color: var(--green-strong);
+}
+
+.pinstall__dash {
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--green-soft);
+}
+
 .pinstall__pick {
   display: flex;
   align-items: center;
