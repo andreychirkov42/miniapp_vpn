@@ -15,6 +15,5 @@ export function detectPlatform(): PlatformId {
   if (/android/.test(ua)) return 'android'
   if (/macintosh|mac os x/.test(ua)) return 'macos'
   if (/windows|win64|win32/.test(ua)) return 'windows'
-  if (/linux/.test(ua)) return 'linux'
   return 'android'
 }
