@@ -1,16 +1,14 @@
 import { useMemo, useState } from 'react'
-import { platformApps, type PlatformId } from '../data'
+import { platformApps } from '../data'
 import { detectPlatform } from '../lib/platform'
 import { openExternal } from '../lib/telegram'
-import { IconChevronDown, IconDownload, IconPlug } from '../icons'
+import { IconCheck, IconDownload, IconPlug } from '../icons'
 
 // Двухшаговый мастер подключения:
 //  1) «Установить» — скачать приложение под платформу → «Уже установил».
 //  2) «Добавить подписку» — импорт конфига в клиент по deeplink (ссылка не показывается).
 export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?: string }) {
-  const detected = useMemo(detectPlatform, [])
-  const [pid, setPid] = useState<PlatformId>(detected)
-  const [open, setOpen] = useState(false)
+  const pid = useMemo(detectPlatform, [])
   const [step, setStep] = useState<'install' | 'add'>('install')
   const [hint, setHint] = useState<string | null>(null)
 
@@ -31,36 +29,17 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
 
   return (
     <div className="pinstall">
-      <div className="pinstall__steps">
-        <span className={`pinstall__step ${step === 'install' ? 'pinstall__step--on' : ''}`}>1. Установить</span>
-        <span className="pinstall__dash" />
-        <span className={`pinstall__step ${step === 'add' ? 'pinstall__step--on' : ''}`}>2. Подписка</span>
-      </div>
-
-      <button className="pinstall__pick" onClick={() => setOpen((v) => !v)}>
-        <span>
-          Платформа: <b>{app.label}</b>
-        </span>
-        <IconChevronDown size={18} />
-      </button>
-
-      {open && (
-        <div className="pinstall__menu">
-          {platformApps.map((p) => (
-            <button
-              key={p.id}
-              className={`pinstall__opt ${p.id === pid ? 'pinstall__opt--active' : ''}`}
-              onClick={() => {
-                setPid(p.id)
-                setOpen(false)
-                setHint(null)
-              }}
-            >
-              {p.label}
-            </button>
-          ))}
+      <div className="stepper">
+        <div className={`stepper__item ${step === 'add' ? 'is-done' : 'is-on'}`}>
+          <span className="stepper__num">{step === 'add' ? <IconCheck size={14} /> : '1'}</span>
+          <span className="stepper__label">Установить</span>
         </div>
-      )}
+        <span className={`stepper__line ${step === 'add' ? 'is-filled' : ''}`} />
+        <div className={`stepper__item ${step === 'add' ? 'is-on' : ''}`}>
+          <span className="stepper__num">2</span>
+          <span className="stepper__label">Подписка</span>
+        </div>
+      </div>
 
       {step === 'install' ? (
         <>
@@ -80,6 +59,16 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
         </>
       ) : (
         <>
+          <div className="pinstall__ready">
+            <span className="pinstall__ready-ic">
+              <IconCheck size={20} />
+            </span>
+            <div className="pinstall__ready-text">
+              <span className="pinstall__ready-title">{app.app} установлен</span>
+              <span className="pinstall__ready-note">Подключим подписку в один тап</span>
+            </div>
+          </div>
+
           <button className="btn btn-primary btn-lg" onClick={connect} disabled={!subscriptionUrl}>
             <IconPlug size={20} />
             Добавить подписку

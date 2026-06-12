@@ -1,0 +1,20 @@
+node_modules
+dist
+dist-ssr
+.git
+.gitignore
+*.log
+__pycache__
+*.py[cod]
+backend/.venv
+.venv
+# Секреты не должны попадать в образ — подаются через env_file в рантайме
+backend/.env
+.env
+.env.*
+!.env.example
+screenshots
+*.zip
+.DS_Store
+*.tsbuildinfo
+README.md

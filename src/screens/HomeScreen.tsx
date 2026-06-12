@@ -106,7 +106,7 @@ export default function HomeScreen({ sub, onTryFree, onAddSubscription, onConnec
             <IconRocket size={22} />
             {busyTrial ? 'Активируем…' : 'Попробовать бесплатно'}
           </button>
-          <span className="cta-caption">7 дней полного доступа — без карты</span>
+          <span className="cta-caption">Месяц полного доступа — без карты</span>
         </div>
         <button className="btn btn-secondary btn-lg" onClick={onAddSubscription}>
           <IconPlus size={22} />

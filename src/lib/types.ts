@@ -28,3 +28,7 @@ export type ConfigResponse = {
   subscription_url: string
   deeplinks: Record<string, string>
 }
+
+export type SupportResponse = {
+  ok: boolean
+}

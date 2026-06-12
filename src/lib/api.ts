@@ -1,5 +1,5 @@
 import { getInitData } from './telegram'
-import type { ConfigResponse, MeResponse, Subscription } from './types'
+import type { ConfigResponse, MeResponse, Subscription, SupportResponse } from './types'
 
 // Пусто → относительный путь (тот же origin, что и фронт — режим одного туннеля).
 // В dev переопределяется через .env (VITE_API_BASE=http://localhost:8000).
@@ -33,4 +33,9 @@ export const api = {
   renew: (uuid: string) =>
     request<Subscription>(`/api/subscriptions/${uuid}/renew`, { method: 'POST' }),
   config: (uuid: string) => request<ConfigResponse>(`/api/subscriptions/${uuid}/config`),
+  support: (message: string) =>
+    request<SupportResponse>('/api/support', {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    }),
 }

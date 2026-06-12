@@ -1,0 +1,33 @@
+# Деплой Akenai VPN Mini App на promo.bezgraniz.site.
+# TLS терминирует внешний remnawave-nginx, проксируя на miniapp:8000
+# по внутренней docker-сети remnawave-network (external).
+services:
+  miniapp:
+    build: .
+    image: miniapp_vpn:latest
+    container_name: miniapp
+    hostname: miniapp
+    env_file: backend/.env
+    restart: always
+    networks:
+      - remnawave-network
+    # Порты наружу не публикуем — nginx ходит по hostname miniapp:8000
+    expose:
+      - "8000"
+
+  miniapp-bot:
+    image: miniapp_vpn:latest
+    container_name: miniapp-bot
+    working_dir: /app/backend
+    command: ["python", "-m", "bot.main"]
+    env_file: backend/.env
+    restart: always
+    depends_on:
+      - miniapp
+    networks:
+      - remnawave-network
+
+networks:
+  remnawave-network:
+    name: remnawave-network
+    external: true

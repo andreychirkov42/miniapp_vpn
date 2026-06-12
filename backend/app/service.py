@@ -3,6 +3,7 @@ implements the trial / renew business logic."""
 
 from __future__ import annotations
 
+import re
 from datetime import datetime, timedelta, timezone
 
 from .config import Settings
@@ -10,14 +11,25 @@ from .schemas import Subscription
 
 GB = 1024**3
 
+# Панель отдаёт время с наносекундами (.123456789Z), а datetime.fromisoformat
+# понимает максимум микросекунды (6 знаков) — обрезаем хвост.
+_SUBSECOND_RE = re.compile(r"(\.\d{6})\d+")
+
 
 def _parse_dt(value: str | None) -> datetime | None:
     if not value:
         return None
+    text = value.strip()
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    text = _SUBSECOND_RE.sub(r"\1", text)
     try:
-        return datetime.fromisoformat(value.replace("Z", "+00:00"))
+        parsed = datetime.fromisoformat(text)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
 
 
 def _fmt_gb(n: int) -> str:

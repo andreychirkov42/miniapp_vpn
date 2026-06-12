@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supportActions } from '../data'
 import { haptic } from '../lib/telegram'
+import SupportModal from '../components/SupportModal'
 import { IconChat, IconChevronRight, IconDevices, IconPlus, IconQuestion } from '../icons'
 
 const actionIcon = {
@@ -11,6 +12,13 @@ const actionIcon = {
 
 export default function SupportScreen() {
   const [tab, setTab] = useState<'open' | 'history'>('open')
+  const [showSupport, setShowSupport] = useState(false)
+
+  // Обращение пишется и отправляется прямо в мини-аппе (бэкенд доставит в поддержку).
+  const handleAction = () => {
+    haptic('light')
+    setShowSupport(true)
+  }
 
   return (
     <div>
@@ -18,7 +26,7 @@ export default function SupportScreen() {
         {supportActions.map((a) => {
           const Icon = actionIcon[a.icon]
           return (
-            <button key={a.id} className="menu-row" onClick={() => haptic('light')}>
+            <button key={a.id} className="menu-row" onClick={handleAction}>
               <span className="menu-row__ic">
                 <Icon size={24} />
               </span>
@@ -47,6 +55,8 @@ export default function SupportScreen() {
         <IconChat size={64} strokeWidth={1.5} />
         <span>{tab === 'open' ? 'Нет открытых обращений' : 'История обращений пуста'}</span>
       </div>
+
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
     </div>
   )
 }

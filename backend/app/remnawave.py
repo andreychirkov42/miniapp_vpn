@@ -19,6 +19,33 @@ class RemnawaveError(RuntimeError):
     pass
 
 
+def _extract_users(payload) -> list[dict]:
+    """Достаёт список пользователей из ответа панели, устойчиво к форме.
+
+    Remnawave может вернуть подписки как голый список, как один объект или
+    завёрнутыми в {"users": [...], "total": N}. Повторяет логику бота
+    vpn_payment_bot, проверенную на живой панели.
+    """
+    if payload is None:
+        return []
+    if isinstance(payload, list):
+        return [u for u in payload if isinstance(u, dict)]
+    if isinstance(payload, dict):
+        users = payload.get("users")
+        if isinstance(users, list):
+            return [u for u in users if isinstance(u, dict)]
+        return [payload]
+    return []
+
+
+def _clean_payload(payload: dict) -> dict:
+    """Убирает служебные mock-поля (с префиксом «_») перед отправкой в панель.
+
+    Remnawave валидирует тело запроса и может отклонить неизвестные поля.
+    """
+    return {k: v for k, v in payload.items() if not k.startswith("_")}
+
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -89,6 +116,11 @@ class RealRemnawave:
                     },
                     json=json,
                 )
+        # Нет привязанных подписок — панель отвечает 404. Это не ошибка, а
+        # «пользователь ещё не оформлен»: возвращаем пусто, чтобы сработал
+        # сценарий нового юзера (триал/оплата), а не 502.
+        if resp.status_code == 404:
+            return None
         if resp.status_code >= 400:
             raise RemnawaveError(f"{method} {path} -> {resp.status_code}: {resp.text}")
         if not resp.content:
@@ -98,19 +130,17 @@ class RealRemnawave:
 
     async def get_users_by_telegram_id(self, telegram_id: int) -> list[dict]:
         res = await self._request("GET", f"/users/by-telegram-id/{telegram_id}")
-        if res is None:
-            return []
-        return res if isinstance(res, list) else [res]
+        return _extract_users(res)
 
     async def get_user(self, uuid: str) -> dict:
         return await self._request("GET", f"/users/{uuid}")
 
     async def create_user(self, payload: dict) -> dict:
-        return await self._request("POST", "/users", json=payload)
+        return await self._request("POST", "/users", json=_clean_payload(payload))
 
     async def update_user(self, payload: dict) -> dict:
         # Remnawave PATCH /users carries the uuid inside the body
-        return await self._request("PATCH", "/users", json=payload)
+        return await self._request("PATCH", "/users", json=_clean_payload(payload))
 
     async def get_hwid_count(self, uuid: str) -> int:
         res = await self._request("GET", f"/hwid/devices/{uuid}")

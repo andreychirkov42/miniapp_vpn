@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Subscription(BaseModel):
@@ -36,3 +36,11 @@ class MeResponse(BaseModel):
 class ConfigResponse(BaseModel):
     subscription_url: str
     deeplinks: dict[str, str]
+
+
+class SupportRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)
+
+
+class SupportResponse(BaseModel):
+    ok: bool

@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     webapp_url: str = "https://example.com"
     support_url: str = "https://t.me/akenaivpn_support"
     channel_url: str = "https://t.me/AkenaiVPN"
+    # Чат/группа, куда бот доставляет обращения из мини-аппа (id, напр. -1001234567890)
+    support_chat_id: str = ""
 
     # Remnawave
     remnawave_mock: bool = True
@@ -26,7 +28,7 @@ class Settings(BaseSettings):
     mock_subscription_url: str = ""
 
     # Tariff defaults
-    trial_days: int = 7
+    trial_days: int = 30
     trial_traffic_gb: int = 100
     trial_device_limit: int = 3
     renew_days: int = 30
