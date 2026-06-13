@@ -55,13 +55,14 @@ export type PlatformApp = {
   deeplink: string
 }
 
-// Схемы импорта подписки:
-//  - FlClashX (Android/Win/macOS): flclashx://install-config?url=<encoded> (сверено с конфигом Remnawave)
-//  - RabbitHole (iOS): rabbithole://add/<subscription_url> — подтверждено тестом (вар.6)
+// Схемы импорта подписки — БАЙТ-В-БАЙТ как в app-config панели Remnawave
+// (там вместо {url} стоит {{SUBSCRIPTION_LINK}}, ссылка подставляется СЫРОЙ):
+//  - FlClashX (Android/Win/macOS/Linux): flclashx://install-config?url=<subscription_url>
+//  - RabbitHole (iOS): rabbithole://add/<subscription_url>
 // Открываются не напрямую (Telegram WebView гасит кастомные схемы), а через
 // https-мост /open — см. PlatformInstall.connect().
-const FLCLASH_DEEPLINK = 'flclashx://install-config?url={url}' // url кодируется (стоит после "=")
-const RABBITHOLE_DEEPLINK = 'rabbithole://add/{url}' // url как путь, без кодирования
+const FLCLASH_DEEPLINK = 'flclashx://install-config?url={url}'
+const RABBITHOLE_DEEPLINK = 'rabbithole://add/{url}'
 
 export const platformApps: PlatformApp[] = [
   { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: 'https://apps.apple.com/us/app/rabbithole-vpn-client/id6683309629', deeplink: RABBITHOLE_DEEPLINK },

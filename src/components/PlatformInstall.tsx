@@ -24,11 +24,10 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
       setHint('Подписка ещё не готова — обновите экран чуть позже')
       return
     }
-    // Если {url} стоит после "=" (query-параметр) — кодируем; иначе вставляем как есть.
-    const i = app.deeplink.indexOf('{url}')
-    const value =
-      i > 0 && app.deeplink[i - 1] === '=' ? encodeURIComponent(subscriptionUrl) : subscriptionUrl
-    const deeplink = app.deeplink.replace('{url}', value)
+    // Подставляем ссылку подписки СЫРОЙ — байт-в-байт как Remnawave подставляет
+    // {{SUBSCRIPTION_LINK}} в app-config панели (это проверенная рабочая форма;
+    // ссылки подписки чистые, без query-параметров, кодировать нечего).
+    const deeplink = app.deeplink.replace('{url}', subscriptionUrl)
     // Telegram WebView не пускает кастомные схемы напрямую, поэтому открываем
     // https-мост /open: он редиректит в схему уже из браузера → ОС запускает клиент.
     const bridge = `${window.location.origin}/open?to=${encodeURIComponent(deeplink)}`
