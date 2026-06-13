@@ -18,7 +18,6 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     Message,
     MenuButtonDefault,
-    ReplyKeyboardRemove,
     WebAppInfo,
 )
 
@@ -41,25 +40,37 @@ def webapp_info() -> WebAppInfo:
     return WebAppInfo(url=f"{settings.webapp_url}{sep}v={WEBAPP_VERSION}")
 
 WELCOME = (
-    "<b>Добро пожаловать в Akenai VPN!</b>\n\n"
-    "Сервис поможет вам\n"
-    "— с обходом <b>белых списков</b>\n"
-    "— с <b>безопасным и анонимным</b> использованием интернета\n"
-    "— а также <b>блокирует рекламу на YouTube!</b>\n\n"
-    "🔗 <b>Как подключиться:</b>\n"
-    'Жмите кнопку <b>"Попробовать за 0 ₽"</b>, чтобы активировать пробный '
-    "период на месяц за 0 рублей.\n"
-    'Или переходите в <b>"Личный кабинет"</b> для подключения тарифа.'
+    "🇰🇬 <b>Платежный сервер (Кыргызстан)</b>\n"
+    "Ваш личный сервер для бесперебойных оплат и интернета.\n\n"
+    "🔥 <b>Почему он нужен:</b>\n"
+    "1️⃣ <b>Гарантия оплат:</b> Платежные системы видят вас внутри Кыргызстана. "
+    "Карты МБАНК работают на 100%, без ложных блокировок со стороны систем "
+    "безопасности + экономите на НДС.\n"
+    "2️⃣ <b>Стабильный доступ:</b> Обеспечьте бесперебойное подключение к "
+    "международным рабочим сервисам, корпоративным сайтам, подпискам и "
+    "мессенджерам без сбоев и потери скорости.\n\n"
+    "🔥 <b>Тестовый режим: 1 месяц — БЕСПЛАТНО!</b> Чтобы вы лично убедились в "
+    "стабильности сервера. Нам важно ваше мнение! Напишите нам отзыв или "
+    "предложение по работе сервера.\n\n"
+    "<b>ВЫБЕРИТЕ ДЕЙСТВИЕ</b>👇\n"
+    "🎁 <b>Попробовать бесплатно</b> — как подключить\n"
+    "👤 <b>Личный кабинет</b> — подписка и срок действия\n"
+    "💬 <b>Отзывы и предложения</b> — напишите нам\n"
+    "🆘 <b>Техподдержка</b> — если что-то не работает"
 )
 
 
 def main_keyboard() -> InlineKeyboardMarkup:
+    # Все кнопки открывают мини-апп (валидный initData приходит только из inline
+    # web_app-кнопок). Отзывы и техподдержка ведут на экран «Поддержка» мини-аппа,
+    # где обращение доставляется в чат поддержки.
     webapp = webapp_info()
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="🔥 Попробовать за 0 ₽", web_app=webapp)],
+            [InlineKeyboardButton(text="🎁 Попробовать бесплатно", web_app=webapp)],
             [InlineKeyboardButton(text="👤 Личный кабинет", web_app=webapp)],
-            [InlineKeyboardButton(text="💬 Чат с поддержкой", url=settings.support_url)],
+            [InlineKeyboardButton(text="💬 Отзывы и предложения", web_app=webapp)],
+            [InlineKeyboardButton(text="🆘 Техподдержка", web_app=webapp)],
         ]
     )
 
@@ -69,10 +80,9 @@ dp = Dispatcher()
 
 @dp.message(CommandStart())
 async def on_start(message: Message) -> None:
-    # ReplyKeyboardRemove — убираем старую reply-кнопку «Кабинет» из чата.
+    # Одно сообщение: приветствие с меню действий внутри текста + inline-кнопки.
     # Кабинет открывается только inline-кнопками (валидный initData).
-    await message.answer(WELCOME, reply_markup=ReplyKeyboardRemove())
-    await message.answer("Выберите действие:", reply_markup=main_keyboard())
+    await message.answer(WELCOME, reply_markup=main_keyboard())
 
 
 @dp.message(F.text == "🗄 Кабинет")
