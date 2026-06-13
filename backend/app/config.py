@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     channel_url: str = "https://t.me/AkenaiVPN"
     # Чат/группа, куда бот доставляет обращения из мини-аппа (id, напр. -1001234567890)
     support_chat_id: str = ""
+    # Telegram id админов через запятую — им доступен раздел «Заявки» в мини-аппе
+    admin_ids: str = ""
+
+    # Хранилище обращений (SQLite). В Docker монтируется в volume: DB_PATH=/data/support.db
+    db_path: str = "support.db"
 
     # Remnawave
     remnawave_mock: bool = True
@@ -40,6 +45,18 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def admin_id_list(self) -> list[int]:
+        ids: list[int] = []
+        for part in self.admin_ids.split(","):
+            part = part.strip()
+            if part:
+                try:
+                    ids.append(int(part))
+                except ValueError:
+                    continue
+        return ids
 
     @property
     def api_base(self) -> str:

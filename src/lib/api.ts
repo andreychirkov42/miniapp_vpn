@@ -1,5 +1,12 @@
 import { getInitData } from './telegram'
-import type { ConfigResponse, MeResponse, Subscription, SupportResponse } from './types'
+import type {
+  ConfigResponse,
+  MeResponse,
+  Subscription,
+  SupportResponse,
+  TicketDetail,
+  TicketListResponse,
+} from './types'
 
 // Пусто → относительный путь (тот же origin, что и фронт — режим одного туннеля).
 // В dev переопределяется через .env (VITE_API_BASE=http://localhost:8000).
@@ -33,9 +40,25 @@ export const api = {
   renew: (uuid: string) =>
     request<Subscription>(`/api/subscriptions/${uuid}/renew`, { method: 'POST' }),
   config: (uuid: string) => request<ConfigResponse>(`/api/subscriptions/${uuid}/config`),
-  support: (message: string) =>
+  // ticketId не задан → создаётся новое обращение; иначе — дописываем в тред
+  support: (message: string, ticketId?: number) =>
     request<SupportResponse>('/api/support', {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      body: JSON.stringify(ticketId ? { message, ticket_id: ticketId } : { message }),
     }),
+  myTickets: () => request<TicketListResponse>('/api/support/tickets'),
+  myTicket: (id: number) => request<TicketDetail>(`/api/support/tickets/${id}`),
+
+  admin: {
+    tickets: (onlyActive = true) =>
+      request<TicketListResponse>(`/api/admin/support/tickets?only_active=${onlyActive}`),
+    ticket: (id: number) => request<TicketDetail>(`/api/admin/support/tickets/${id}`),
+    reply: (id: number, message: string) =>
+      request<TicketDetail>(`/api/admin/support/tickets/${id}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ message }),
+      }),
+    close: (id: number) =>
+      request<TicketDetail>(`/api/admin/support/tickets/${id}/close`, { method: 'POST' }),
+  },
 }

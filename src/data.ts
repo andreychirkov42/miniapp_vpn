@@ -37,14 +37,11 @@ export type SupportAction = {
 
 export const supportActions: SupportAction[] = [
   { id: 'new', title: 'Новое обращение', sub: 'Связаться с поддержкой', icon: 'plus' },
-  { id: 'faq', title: 'Часто задаваемые вопросы', sub: 'Ответы на часто задаваемые вопросы', icon: 'question' },
-  {
-    id: 'install',
-    title: 'Установка на другом устройстве',
-    sub: 'Подробная инструкция для установки',
-    icon: 'devices',
-  },
+  { id: 'guide', title: 'Инструкция по установке', sub: 'Пошаговое руководство', icon: 'question' },
 ]
+
+// Ссылка на статью-инструкцию в Telegraph. TODO: заменить на финальный URL.
+export const INSTALL_GUIDE_URL = 'https://telegra.ph/Instrukciya-po-ustanovke-01-01'
 
 export type PlatformId = 'ios' | 'android' | 'windows' | 'macos'
 

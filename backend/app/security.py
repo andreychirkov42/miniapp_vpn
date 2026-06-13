@@ -14,11 +14,15 @@ import json
 import logging
 from urllib.parse import parse_qsl
 
-from fastapi import Header, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 
 from .config import get_settings
 
 logger = logging.getLogger("akenai.auth")
+
+
+def is_admin(telegram_id: int) -> bool:
+    return telegram_id in get_settings().admin_id_list
 
 
 class TelegramUser:
@@ -104,3 +108,12 @@ async def require_telegram_user(authorization: str | None = Header(default=None)
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="missing Telegram initData",
     )
+
+
+async def require_admin(
+    user: TelegramUser = Depends(require_telegram_user),
+) -> TelegramUser:
+    """FastAPI dependency: пропускает только админов (telegram_id ∈ ADMIN_IDS)."""
+    if not is_admin(user.telegram_id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="admin only")
+    return user

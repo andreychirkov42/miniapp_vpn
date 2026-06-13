@@ -31,6 +31,7 @@ class Subscription(BaseModel):
 class MeResponse(BaseModel):
     telegram_id: int
     subscriptions: list[Subscription]
+    is_admin: bool = False
 
 
 class ConfigResponse(BaseModel):
@@ -40,7 +41,42 @@ class ConfigResponse(BaseModel):
 
 class SupportRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
+    # None → создать новое обращение; иначе — дописать в существующий тикет юзера
+    ticket_id: int | None = None
 
 
 class SupportResponse(BaseModel):
     ok: bool
+    ticket_id: int
+
+
+class TicketMessage(BaseModel):
+    id: int
+    author: str  # user | admin
+    text: str
+    created_at: str
+
+
+class Ticket(BaseModel):
+    id: int
+    status: str  # open | answered | closed
+    created_at: str
+    updated_at: str
+    last_message: str | None = None
+    last_author: str | None = None
+    # заполняется только в админских ответах — кто автор обращения
+    user_telegram_id: int | None = None
+    username: str | None = None
+    first_name: str | None = None
+
+
+class TicketDetail(Ticket):
+    messages: list[TicketMessage] = Field(default_factory=list)
+
+
+class TicketListResponse(BaseModel):
+    tickets: list[Ticket]
+
+
+class AdminReplyRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=2000)

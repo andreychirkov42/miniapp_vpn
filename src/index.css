@@ -1305,3 +1305,199 @@ button {
   line-height: 1.3;
 }
 
+/* ---- Обращения (тикеты) ---- */
+.ticket-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ticket-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
+}
+
+.ticket-row:active {
+  background: var(--surface-2);
+}
+
+.ticket-row__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-row__id {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.ticket-row__preview {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ticket-row__who {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.tk-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.tk-badge--open {
+  background: #fdecec;
+  color: var(--danger);
+}
+
+.tk-badge--answered {
+  background: var(--green-soft);
+  color: var(--green-deep);
+}
+
+.tk-badge--closed {
+  background: var(--surface-3);
+  color: var(--text-muted);
+}
+
+/* Тред-чат: полноэкранный поверх контента */
+.thread {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.thread__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.thread__back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.thread__title {
+  flex: 1;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.thread__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bubble {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bubble__time {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.bubble--user {
+  align-self: flex-end;
+  background: linear-gradient(160deg, var(--green-strong), var(--green-deep));
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.bubble--admin {
+  align-self: flex-start;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
+  border-bottom-left-radius: 4px;
+}
+
+.thread__composer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.thread__composer textarea {
+  flex: 1;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 11px 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.thread__send {
+  align-self: flex-end;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(160deg, var(--green-strong), var(--green-deep));
+}
+
+.thread__send:disabled {
+  opacity: 0.5;
+}
+
+.thread__closed {
+  text-align: center;
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+

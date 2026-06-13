@@ -25,7 +25,7 @@ function isNoTelegramContext(): boolean {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home')
-  const { subs, loading, error, reload, activateTrial } = useSubscriptions()
+  const { subs, isAdmin, loading, error, reload, activateTrial } = useSubscriptions()
   const [trialSuccess, setTrialSuccess] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
   const [configSub, setConfigSub] = useState<Subscription | null>(null)
@@ -78,7 +78,7 @@ export default function App() {
             busyTrial={busyTrial}
           />
         )}
-        {!loading && !error && tab === 'support' && <SupportScreen />}
+        {!loading && !error && tab === 'support' && <SupportScreen isAdmin={isAdmin} />}
         {!loading && !error && tab === 'profile' && <ProfileScreen onOpenModal={setProfileModal} />}
       </main>
 

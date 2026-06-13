@@ -35,16 +35,29 @@ async def send_message(bot_token: str, chat_id: str, text: str) -> None:
         raise TelegramSendError(f"sendMessage not ok: {data}")
 
 
-def build_support_text(
-    *, telegram_id: int, username: str | None, first_name: str | None, message: str
+def build_alert_text(
+    *, ticket_id: int, username: str | None, first_name: str | None, message: str
 ) -> str:
-    """Форматирует обращение для чата поддержки (с экранированием пользовательского текста)."""
+    """Короткий алерт в чат поддержки: только сигнал «есть новое», без всего диалога.
+    Полный диалог админ открывает в мини-аппе → раздел «Заявки»."""
     who = html.escape(first_name or "пользователь")
-    handle = f"@{html.escape(username)}" if username else "—"
+    handle = f" (@{html.escape(username)})" if username else ""
+    preview = html.escape(message.strip())
+    if len(preview) > 160:
+        preview = preview[:160] + "…"
+    return (
+        f"🆘 <b>Новое обращение #{ticket_id}</b>\n"
+        f"<b>От:</b> {who}{handle}\n\n"
+        f"{preview}\n\n"
+        "<i>Ответить: откройте «Кабинет» в боте → Поддержка → Заявки.</i>"
+    )
+
+
+def build_user_reply_text(*, ticket_id: int, message: str) -> str:
+    """Уведомление пользователю в личку об ответе поддержки."""
     body = html.escape(message.strip())
     return (
-        "🆘 <b>Новое обращение из мини-аппа</b>\n\n"
-        f"<b>От:</b> {who} ({handle})\n"
-        f"<b>Telegram ID:</b> <code>{telegram_id}</code>\n\n"
-        f"<b>Сообщение:</b>\n{body}"
+        f"💬 <b>Ответ поддержки по обращению #{ticket_id}</b>\n\n"
+        f"{body}\n\n"
+        "<i>Продолжить переписку можно в мини-аппе → Поддержка.</i>"
     )

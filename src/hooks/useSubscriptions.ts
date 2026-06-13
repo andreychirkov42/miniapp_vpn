@@ -4,20 +4,26 @@ import type { Subscription } from '../lib/types'
 
 type State = {
   subs: Subscription[]
+  isAdmin: boolean
   loading: boolean
   error: string | null
 }
 
 export function useSubscriptions() {
-  const [state, setState] = useState<State>({ subs: [], loading: true, error: null })
+  const [state, setState] = useState<State>({
+    subs: [],
+    isAdmin: false,
+    loading: true,
+    error: null,
+  })
 
   const load = useCallback(async () => {
     setState((s) => ({ ...s, loading: true, error: null }))
     try {
       const me = await api.me()
-      setState({ subs: me.subscriptions, loading: false, error: null })
+      setState({ subs: me.subscriptions, isAdmin: me.is_admin, loading: false, error: null })
     } catch (e) {
-      setState({ subs: [], loading: false, error: (e as Error).message })
+      setState({ subs: [], isAdmin: false, loading: false, error: (e as Error).message })
     }
   }, [])
 

@@ -22,6 +22,7 @@ export type Subscription = {
 export type MeResponse = {
   telegram_id: number
   subscriptions: Subscription[]
+  is_admin: boolean
 }
 
 export type ConfigResponse = {
@@ -31,4 +32,35 @@ export type ConfigResponse = {
 
 export type SupportResponse = {
   ok: boolean
+  ticket_id: number
+}
+
+export type TicketStatus = 'open' | 'answered' | 'closed'
+
+export type Ticket = {
+  id: number
+  status: TicketStatus
+  created_at: string
+  updated_at: string
+  last_message: string | null
+  last_author: 'user' | 'admin' | null
+  // присутствует в админских ответах
+  user_telegram_id?: number | null
+  username?: string | null
+  first_name?: string | null
+}
+
+export type TicketMessage = {
+  id: number
+  author: 'user' | 'admin'
+  text: string
+  created_at: string
+}
+
+export type TicketDetail = Ticket & {
+  messages: TicketMessage[]
+}
+
+export type TicketListResponse = {
+  tickets: Ticket[]
 }

@@ -8,6 +8,12 @@ services:
     container_name: miniapp
     hostname: miniapp
     env_file: backend/.env
+    # Хранилище обращений (SQLite) в именованном volume — переживает пересборку.
+    # Пишет в БД только этот сервис (API); бот к ней не обращается.
+    environment:
+      DB_PATH: /data/support.db
+    volumes:
+      - support-data:/data
     restart: always
     networks:
       - remnawave-network
@@ -26,6 +32,9 @@ services:
       - miniapp
     networks:
       - remnawave-network
+
+volumes:
+  support-data:
 
 networks:
   remnawave-network:

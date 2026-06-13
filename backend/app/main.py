@@ -1,4 +1,5 @@
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -7,12 +8,25 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
+from . import db
 from .config import get_settings
-from .routers import api
+from .routers import admin, api
 
 settings = get_settings()
 
-app = FastAPI(title="Akenai VPN — Mini App BFF", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Открываем SQLite-хранилище обращений и держим одно соединение на всё
+    # время жизни приложения (см. db.get_db).
+    app.state.db = await db.connect(settings.db_path)
+    try:
+        yield
+    finally:
+        await app.state.db.close()
+
+
+app = FastAPI(title="Akenai VPN — Mini App BFF", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,6 +37,7 @@ app.add_middleware(
 )
 
 app.include_router(api.router)
+app.include_router(admin.router)
 
 
 # CSP, разрешающий встраивание в Telegram Web (он грузит мини-апп в iframe с

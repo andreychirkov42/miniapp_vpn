@@ -13,6 +13,12 @@ screenshots/
 .venv/
 __pycache__/
 *.py[cod]
+
+# SQLite-хранилище обращений (локальный dev) и WAL-файлы
+*.db
+*.db-shm
+*.db-wal
+.pytest_cache/
 *$py.class
 
 *.tsbuildinfo
