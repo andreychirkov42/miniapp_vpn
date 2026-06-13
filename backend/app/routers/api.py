@@ -69,7 +69,7 @@ async def activate_trial(
         if existing:
             # already has a subscription — return the first instead of duplicating
             return service.map_subscription(existing[0], 0)
-        payload = service.build_trial_payload(settings, user.telegram_id)
+        payload = service.build_trial_payload(settings, user.telegram_id, user.username)
         created = await client.create_user(payload)
     except RemnawaveError as exc:
         raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc

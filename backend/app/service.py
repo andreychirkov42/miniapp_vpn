@@ -82,10 +82,23 @@ def map_all(raws: list[dict]) -> list[Subscription]:
     return [map_subscription(r, i) for i, r in enumerate(raws)]
 
 
-def build_trial_payload(settings: Settings, telegram_id: int) -> dict:
+# Remnawave username: 6-34 символа, латиница/цифры/_/- . Telegram-хэндл (после @)
+# состоит из [a-zA-Z0-9_], 5-32 симв. — почти всегда подходит; короткие (<6) и
+# отсутствующие отправляем под запасным tg{id}, иначе панель отвергнет создание.
+_PANEL_USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{6,34}$")
+
+
+def panel_username(telegram_id: int, username: str | None) -> str:
+    """Имя для панели: Telegram-хэндл, если валиден; иначе запасной tg{id}."""
+    if username and _PANEL_USERNAME_RE.match(username):
+        return username
+    return f"tg{telegram_id}"
+
+
+def build_trial_payload(settings: Settings, telegram_id: int, username: str | None = None) -> dict:
     expire = datetime.now(timezone.utc) + timedelta(days=settings.trial_days)
     payload: dict = {
-        "username": f"tg{telegram_id}_{int(datetime.now().timestamp())}",
+        "username": panel_username(telegram_id, username),
         "telegramId": telegram_id,
         "status": "ACTIVE",
         "trafficLimitBytes": settings.trial_traffic_gb * GB,
