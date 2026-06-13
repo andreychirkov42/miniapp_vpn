@@ -32,7 +32,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
 # по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
-WEBAPP_VERSION = "20260613f"
+WEBAPP_VERSION = "20260613h"
 
 
 def webapp_info() -> WebAppInfo:
