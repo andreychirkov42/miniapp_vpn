@@ -8,12 +8,14 @@ export function detectPlatform(): PlatformId {
   if (p === 'ios') return 'ios'
   if (p === 'android') return 'android'
   if (p === 'macos') return 'macos'
-  if (p === 'tdesktop' || p === 'windows' || p === 'win') return 'windows'
+  if (p === 'windows' || p === 'win') return 'windows'
+  // 'tdesktop' (десктопный Telegram) — это Windows/macOS/Linux, различаем по userAgent ниже.
 
   const ua = (navigator.userAgent || '').toLowerCase()
   if (/iphone|ipad|ipod/.test(ua)) return 'ios'
-  if (/android/.test(ua)) return 'android'
+  if (/android/.test(ua)) return 'android' // android UA тоже содержит "linux" — проверяем раньше
   if (/macintosh|mac os x/.test(ua)) return 'macos'
   if (/windows|win64|win32/.test(ua)) return 'windows'
+  if (/linux|x11/.test(ua)) return 'linux'
   return 'android'
 }

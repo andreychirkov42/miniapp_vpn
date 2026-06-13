@@ -43,7 +43,7 @@ export const supportActions: SupportAction[] = [
 // Ссылка на статью-инструкцию в Telegraph. TODO: заменить на финальный URL.
 export const INSTALL_GUIDE_URL = 'https://telegra.ph/Instrukciya-po-ustanovke-01-01'
 
-export type PlatformId = 'ios' | 'android' | 'windows' | 'macos'
+export type PlatformId = 'ios' | 'android' | 'windows' | 'macos' | 'linux'
 
 export type PlatformApp = {
   id: PlatformId
@@ -68,6 +68,7 @@ export const platformApps: PlatformApp[] = [
   { id: 'android', label: 'Android', short: 'Android', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-android-universal.apk', deeplink: FLCLASH_DEEPLINK },
   { id: 'windows', label: 'Windows', short: 'Windows', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-windows-amd64-setup.exe', deeplink: FLCLASH_DEEPLINK },
   { id: 'macos', label: 'macOS', short: 'macOS', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-macos-arm64.dmg', deeplink: FLCLASH_DEEPLINK },
+  { id: 'linux', label: 'Linux', short: 'Linux', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-linux-amd64.AppImage', deeplink: FLCLASH_DEEPLINK },
 ]
 
 export const BOT_USERNAME = 'bezgraniz_cabinet_bot'
