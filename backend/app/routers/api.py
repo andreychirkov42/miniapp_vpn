@@ -102,7 +102,7 @@ async def get_config(
     except RemnawaveError as exc:
         raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc
     url = str(raw.get("subscriptionUrl") or "")
-    return ConfigResponse(subscription_url=url, deeplinks=service.build_deeplinks(url))
+    return ConfigResponse(subscription_url=url)
 
 
 @router.post("/support", response_model=SupportResponse)

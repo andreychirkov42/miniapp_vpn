@@ -112,18 +112,18 @@ async def get_with_messages(conn: aiosqlite.Connection, ticket_id: int) -> dict 
 
 async def list_by_user(conn: aiosqlite.Connection, user_telegram_id: int) -> list[dict]:
     """Тикеты пользователя (свежие сверху) с превью последнего сообщения."""
-    return await _list("WHERE t.user_telegram_id = ?", (user_telegram_id,), conn)
+    return await _list(conn, "WHERE t.user_telegram_id = ?", (user_telegram_id,))
 
 
 async def list_all(conn: aiosqlite.Connection, *, only_active: bool) -> list[dict]:
     """Все тикеты для админа. only_active=True исключает закрытые."""
     if only_active:
         placeholders = ",".join("?" for _ in ACTIVE_STATUSES)
-        return await _list(f"WHERE t.status IN ({placeholders})", ACTIVE_STATUSES, conn)
-    return await _list("", (), conn)
+        return await _list(conn, f"WHERE t.status IN ({placeholders})", ACTIVE_STATUSES)
+    return await _list(conn, "", ())
 
 
-async def _list(where: str, params: tuple, conn: aiosqlite.Connection) -> list[dict]:
+async def _list(conn: aiosqlite.Connection, where: str, params: tuple) -> list[dict]:
     cur = await conn.execute(
         "SELECT t.*, "
         "  (SELECT text FROM ticket_messages m WHERE m.ticket_id = t.id "

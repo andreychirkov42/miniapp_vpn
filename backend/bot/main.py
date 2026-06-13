@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from aiogram import Bot, Dispatcher, F
+from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
@@ -83,11 +83,6 @@ async def on_start(message: Message) -> None:
     # Одно сообщение: приветствие с меню действий внутри текста + inline-кнопки.
     # Кабинет открывается только inline-кнопками (валидный initData).
     await message.answer(WELCOME, reply_markup=main_keyboard())
-
-
-@dp.message(F.text == "🗄 Кабинет")
-async def on_cabinet(message: Message) -> None:
-    await message.answer("Открываю личный кабинет 👇", reply_markup=main_keyboard())
 
 
 async def run() -> None:

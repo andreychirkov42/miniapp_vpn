@@ -36,7 +36,6 @@ class MeResponse(BaseModel):
 
 class ConfigResponse(BaseModel):
     subscription_url: str
-    deeplinks: dict[str, str]
 
 
 class SupportRequest(BaseModel):

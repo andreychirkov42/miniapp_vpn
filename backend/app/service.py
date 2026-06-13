@@ -124,15 +124,3 @@ def build_renew_payload(raw: dict, settings: Settings) -> dict:
         "expireAt": new_expire.isoformat().replace("+00:00", "Z"),
         "status": "ACTIVE",
     }
-
-
-def build_deeplinks(subscription_url: str) -> dict[str, str]:
-    if not subscription_url:
-        return {}
-    return {
-        "v2raytun": f"v2raytun://import/{subscription_url}",
-        "happ": f"happ://add/{subscription_url}",
-        "streisand": f"streisand://import/{subscription_url}",
-        "hiddify": f"hiddify://import/{subscription_url}",
-        "clash": f"clash://install-config?url={subscription_url}",
-    }
