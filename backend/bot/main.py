@@ -16,10 +16,9 @@ from aiogram.filters import CommandStart
 from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    KeyboardButton,
     Message,
-    MenuButtonWebApp,
-    ReplyKeyboardMarkup,
+    MenuButtonDefault,
+    ReplyKeyboardRemove,
     WebAppInfo,
 )
 
@@ -31,6 +30,15 @@ from app.config import get_settings  # noqa: E402
 
 settings = get_settings()
 logging.basicConfig(level=logging.INFO)
+
+# Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
+# по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
+WEBAPP_VERSION = "20260613f"
+
+
+def webapp_info() -> WebAppInfo:
+    sep = "&" if "?" in settings.webapp_url else "?"
+    return WebAppInfo(url=f"{settings.webapp_url}{sep}v={WEBAPP_VERSION}")
 
 WELCOME = (
     "<b>Добро пожаловать в Akenai VPN!</b>\n\n"
@@ -46,7 +54,7 @@ WELCOME = (
 
 
 def main_keyboard() -> InlineKeyboardMarkup:
-    webapp = WebAppInfo(url=settings.webapp_url)
+    webapp = webapp_info()
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="🔥 Попробовать за 0 ₽", web_app=webapp)],
@@ -56,19 +64,14 @@ def main_keyboard() -> InlineKeyboardMarkup:
     )
 
 
-def cabinet_keyboard() -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="🗄 Кабинет", web_app=WebAppInfo(url=settings.webapp_url))]],
-        resize_keyboard=True,
-    )
-
-
 dp = Dispatcher()
 
 
 @dp.message(CommandStart())
 async def on_start(message: Message) -> None:
-    await message.answer(WELCOME, reply_markup=cabinet_keyboard())
+    # ReplyKeyboardRemove — убираем старую reply-кнопку «Кабинет» из чата.
+    # Кабинет открывается только inline-кнопками (валидный initData).
+    await message.answer(WELCOME, reply_markup=ReplyKeyboardRemove())
     await message.answer("Выберите действие:", reply_markup=main_keyboard())
 
 
@@ -81,8 +84,10 @@ async def run() -> None:
     if not settings.bot_token or settings.bot_token.startswith("123456:"):
         raise SystemExit("BOT_TOKEN не задан в backend/.env")
     bot = Bot(token=settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-    # Кнопка-меню рядом с полем ввода открывает мини-апп
-    await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="Кабинет", web_app=WebAppInfo(url=settings.webapp_url)))
+    # Меню-кнопка web_app даёт пустой initData (особенно в Telegram Desktop) → 401.
+    # Кабинет открываем только inline-кнопками из /start, а меню-кнопку сбрасываем
+    # на дефолт (список команд), чтобы её больше не было.
+    await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
     logging.info("Bot polling started")
     await dp.start_polling(bot)
 

@@ -10,14 +10,17 @@ import PromoModal from './components/PromoModal'
 import ReferralModal from './components/ReferralModal'
 import PaymentsModal from './components/PaymentsModal'
 import { useSubscriptions } from './hooks/useSubscriptions'
-import { initTelegram, haptic, openBot, tg } from './lib/telegram'
+import { initTelegram, haptic, openBot, getInitData } from './lib/telegram'
 import { BOT_USERNAME } from './data'
 import { IconRocket } from './icons'
 import type { Subscription } from './lib/types'
 
-// Ошибка аутентификации = мини-апп открыт вне Telegram (нет подписанного initData).
-function isAuthError(message: string): boolean {
-  return !tg() || /initData|Telegram|unauthorized|401/i.test(message)
+// Нет контекста Telegram = нечем авторизоваться (мини-апп открыт вне Telegram
+// либо запущен так, что initData не пришёл и нет сохранённого). Только в этом
+// случае показываем экран «Откройте через бота» — иначе это сетевая/панельная
+// ошибка, и нужно показать её текст с кнопкой «Повторить», а не тупик.
+function isNoTelegramContext(): boolean {
+  return getInitData() === ''
 }
 
 export default function App() {
@@ -61,7 +64,7 @@ export default function App() {
       <main className={`content ${tab === 'home' ? 'content--center' : ''}`}>
         {loading && <CenterMsg text="Загрузка…" />}
         {!loading && error &&
-          (isAuthError(error) ? (
+          (isNoTelegramContext() ? (
             <NeedTelegram />
           ) : (
             <CenterMsg text={`Ошибка: ${error}`} onRetry={reload} />

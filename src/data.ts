@@ -58,13 +58,16 @@ export type PlatformApp = {
   deeplink: string
 }
 
-// Клиенты: RabbitHole на iOS, FlClashX на остальное.
-// downloadUrl — заполнишь ссылками на скачивание. deeplink-схемы помечены ниже — подтверди.
-const FLCLASH_DEEPLINK = 'flclashx://install-config?url={url}' // FlClashX — url кодируется (стоит после "=")
-const RABBITHOLE_DEEPLINK = 'rabbithole://add/{url}' // RabbitHole iOS — импорт по subscription_url
+// Схемы импорта подписки:
+//  - FlClashX (Android/Win/macOS): flclashx://install-config?url=<encoded> (сверено с конфигом Remnawave)
+//  - RabbitHole (iOS): rabbithole://add/<subscription_url> — подтверждено тестом (вар.6)
+// Открываются не напрямую (Telegram WebView гасит кастомные схемы), а через
+// https-мост /open — см. PlatformInstall.connect().
+const FLCLASH_DEEPLINK = 'flclashx://install-config?url={url}' // url кодируется (стоит после "=")
+const RABBITHOLE_DEEPLINK = 'rabbithole://add/{url}' // url как путь, без кодирования
 
 export const platformApps: PlatformApp[] = [
-  { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: 'https://apps.apple.com/ru/app/rabbithole-vpn-client/id6683309629', deeplink: RABBITHOLE_DEEPLINK },
+  { id: 'ios', label: 'iPhone / iPad', short: 'iOS', app: 'RabbitHole', downloadUrl: 'https://apps.apple.com/us/app/rabbithole-vpn-client/id6683309629', deeplink: RABBITHOLE_DEEPLINK },
   { id: 'android', label: 'Android', short: 'Android', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-android-universal.apk', deeplink: FLCLASH_DEEPLINK },
   { id: 'windows', label: 'Windows', short: 'Windows', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-windows-amd64-setup.exe', deeplink: FLCLASH_DEEPLINK },
   { id: 'macos', label: 'macOS', short: 'macOS', app: 'FlClashX', downloadUrl: 'https://github.com/pluralplay/FlClashX/releases/download/v0.3.2/FlClashX-macos-arm64.dmg', deeplink: FLCLASH_DEEPLINK },

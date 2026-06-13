@@ -11,11 +11,14 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import logging
 from urllib.parse import parse_qsl
 
 from fastapi import Header, HTTPException, status
 
 from .config import get_settings
+
+logger = logging.getLogger("akenai.auth")
 
 
 class TelegramUser:
@@ -62,6 +65,7 @@ async def require_telegram_user(authorization: str | None = Header(default=None)
     settings = get_settings()
 
     init_data = None
+    scheme = ""
     if authorization:
         scheme, _, value = authorization.partition(" ")
         if scheme.lower() in ("tma", "twa", "bearer") and value:
@@ -71,6 +75,12 @@ async def require_telegram_user(authorization: str | None = Header(default=None)
         try:
             return parse_init_data(init_data, settings.bot_token)
         except (ValueError, KeyError, json.JSONDecodeError) as exc:
+            # Логируем причину и безопасный «отпечаток» initData (ключи, без значений),
+            # чтобы отличать «битая подпись» от «не те поля / пустой user».
+            keys = [p.split("=", 1)[0] for p in init_data.split("&")]
+            logger.warning(
+                "initData rejected: %s | len=%d keys=%s", exc, len(init_data), keys
+            )
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"invalid initData: {exc}",
@@ -84,6 +94,12 @@ async def require_telegram_user(authorization: str | None = Header(default=None)
             first_name="Dev",
         )
 
+    logger.warning(
+        "no initData: header_present=%s scheme=%r init_data_len=%d",
+        bool(authorization),
+        scheme,
+        len(init_data or ""),
+    )
     raise HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="missing Telegram initData",

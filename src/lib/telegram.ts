@@ -27,8 +27,49 @@ export function initTelegram(): void {
   }
 }
 
+const INIT_DATA_KEY = 'tg_init_data'
+
+// initData нужен бэкенду для проверки подписи и идентификации пользователя.
+// Проблема: при запуске мини-аппа через меню-кнопку (и в Telegram Desktop)
+// Telegram.WebApp.initData нередко приходит пустым, хотя через inline-кнопку он есть.
+// Поэтому берём данные из нескольких источников по убыванию надёжности:
+//  1) живой WebApp.initData;
+//  2) launch-параметр tgWebAppData из URL-фрагмента (его парсит сам SDK);
+//  3) последний валидный initData этого устройства (бэкенд не проверяет срок —
+//     своя же подписанная строка остаётся валидной, юзер тот же).
 export function getInitData(): string {
-  return tg()?.initData ?? ''
+  const live = tg()?.initData ?? ''
+  if (live) {
+    cacheInitData(live)
+    return live
+  }
+  const fromHash = initDataFromHash()
+  if (fromHash) {
+    cacheInitData(fromHash)
+    return fromHash
+  }
+  try {
+    return localStorage.getItem(INIT_DATA_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function cacheInitData(value: string): void {
+  try {
+    localStorage.setItem(INIT_DATA_KEY, value)
+  } catch {
+    /* localStorage недоступен — не критично */
+  }
+}
+
+function initDataFromHash(): string {
+  try {
+    const hash = window.location.hash.replace(/^#/, '')
+    return new URLSearchParams(hash).get('tgWebAppData') ?? ''
+  } catch {
+    return ''
+  }
 }
 
 export function haptic(kind: 'light' | 'success' | 'error' = 'light'): void {
@@ -69,6 +110,36 @@ export function openBot(username: string): void {
 
 export function getUserId(): number | null {
   return tg()?.initDataUnsafe?.user?.id ?? null
+}
+
+// Скопировать текст в буфер обмена. СИНХРОННО — чтобы не потерять «жест
+// пользователя»: в WebView Telegram Desktop `await navigator.clipboard` рвёт
+// активацию и фолбэк execCommand уже не срабатывает. Поэтому сначала
+// execCommand в рамках клика, а navigator.clipboard — как доп. попытка.
+export function copyToClipboard(text: string): boolean {
+  let ok = false
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.setAttribute('readonly', '')
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    ta.setSelectionRange(0, text.length)
+    try {
+      ok = document.execCommand('copy')
+    } catch {
+      ok = false
+    }
+    document.body.removeChild(ta)
+  } catch {
+    ok = false
+  }
+  if (!ok && navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => {})
+  }
+  return ok
 }
 
 export function shareToTelegram(url: string, text: string): void {

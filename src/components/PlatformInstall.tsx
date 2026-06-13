@@ -1,14 +1,15 @@
 import { useMemo, useState } from 'react'
 import { platformApps } from '../data'
 import { detectPlatform } from '../lib/platform'
-import { openDeeplink, openExternal } from '../lib/telegram'
-import { IconCheck, IconDownload, IconPlug } from '../icons'
+import { openExternal, copyToClipboard } from '../lib/telegram'
+import { IconDownload, IconPlug } from '../icons'
 
-// Подключение в один тап: основное действие — «Добавить подписку» (импорт конфига
-// в клиент по deeplink). Если клиент ещё не установлен — вторичный шаг установки.
+// Двухшаговый мастер подключения:
+//  1) «Установить {app}» — скачать клиент под платформу → «Клиент установлен».
+//  2) «Добавить подписку» — импорт конфига в клиент через https-мост /open.
 export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?: string }) {
   const pid = useMemo(detectPlatform, [])
-  const [step, setStep] = useState<'add' | 'install'>('add')
+  const [step, setStep] = useState<'install' | 'add'>('install')
   const [hint, setHint] = useState<string | null>(null)
 
   const app = platformApps.find((p) => p.id === pid) ?? platformApps[0]
@@ -23,24 +24,45 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
       setHint('Подписка ещё не готова — обновите экран чуть позже')
       return
     }
-    // если {url} стоит после "=" (query-параметр) — кодируем; иначе вставляем как есть
+    // Если {url} стоит после "=" (query-параметр) — кодируем; иначе вставляем как есть.
     const i = app.deeplink.indexOf('{url}')
     const value =
       i > 0 && app.deeplink[i - 1] === '=' ? encodeURIComponent(subscriptionUrl) : subscriptionUrl
-    openDeeplink(app.deeplink.replace('{url}', value))
+    const deeplink = app.deeplink.replace('{url}', value)
+    // Telegram WebView не пускает кастомные схемы напрямую, поэтому открываем
+    // https-мост /open: он редиректит в схему уже из браузера → ОС запускает клиент.
+    const bridge = `${window.location.origin}/open?to=${encodeURIComponent(deeplink)}`
+    openExternal(bridge)
+    setHint(`Открываем ${app.app}… не открылось — установите клиент и повторите или скопируйте ссылку`)
   }
 
+  const copyLink = () => {
+    if (!subscriptionUrl) {
+      setHint('Подписка ещё не готова — обновите экран чуть позже')
+      return
+    }
+    const ok = copyToClipboard(subscriptionUrl)
+    setHint(ok ? 'Ссылка скопирована — вставьте её в клиент' : 'Выделите ссылку выше и скопируйте вручную')
+  }
+
+  // ---- Шаг 1: установка клиента ----
   if (step === 'install') {
     return (
       <div className="pinstall">
         <div className="pinstall__lead">
-          Установите клиент <b>{app.app}</b> для {app.label}, затем вернитесь и добавьте подписку.
+          Установите клиент <b>{app.app}</b> для {app.label}, затем добавьте подписку.
         </div>
         <button className="btn btn-primary btn-lg" onClick={download}>
           <IconDownload size={22} />
           Установить {app.app}
         </button>
-        <button className="btn btn-secondary btn-lg" onClick={() => { setStep('add'); setHint(null) }}>
+        <button
+          className="btn btn-secondary btn-lg"
+          onClick={() => {
+            setStep('add')
+            setHint(null)
+          }}
+        >
           <IconPlug size={20} />
           Клиент установлен — добавить подписку
         </button>
@@ -49,26 +71,37 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
     )
   }
 
+  // ---- Шаг 2: добавление подписки ----
   return (
     <div className="pinstall">
-      <div className="pinstall__ready">
-        <span className="pinstall__ready-ic">
-          <IconCheck size={20} />
-        </span>
-        <div className="pinstall__ready-text">
-          <span className="pinstall__ready-title">Подписка готова</span>
-          <span className="pinstall__ready-note">Откроется в {app.app} в один тап</span>
-        </div>
+      <div className="pinstall__lead">
+        Подписка для <b>{app.app}</b> готова — добавьте её в клиент.
       </div>
-
       <button className="btn btn-primary btn-lg" onClick={connect} disabled={!subscriptionUrl}>
         <IconPlug size={20} />
         Добавить подписку
       </button>
-      <button className="btn-text" onClick={() => { setStep('install'); setHint(null) }}>
-        Клиент ещё не установлен?
-      </button>
 
+      {subscriptionUrl && (
+        <div className="sub-link">
+          <button className="btn btn-secondary btn-lg" onClick={copyLink}>
+            Скопировать ссылку
+          </button>
+          <div className="sub-link__note">
+            Не открылось автоматически? Скопируйте ссылку и вставьте её в {app.app}: «Добавить из буфера обмена».
+          </div>
+        </div>
+      )}
+
+      <button
+        className="btn-text"
+        onClick={() => {
+          setStep('install')
+          setHint(null)
+        }}
+      >
+        Назад к установке
+      </button>
       {hint && <div className="cfg-hint">{hint}</div>}
     </div>
   )
