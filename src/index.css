@@ -1391,6 +1391,11 @@ button {
   background: var(--bg);
 }
 
+/* Пока открыт тред — нижняя навигация мини-аппа не нужна (у треда своя «Назад») */
+.thread-open .nav {
+  display: none;
+}
+
 .thread__head {
   display: flex;
   align-items: center;

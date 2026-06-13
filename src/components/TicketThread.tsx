@@ -27,6 +27,13 @@ export default function TicketThread({ ticketId, role, onClose }: Props) {
   const messages = data?.messages ?? []
   const isClosed = data?.status === 'closed'
 
+  // Пока открыт тред — прячем нижнюю навигацию мини-аппа (иначе её плавающая
+  // «таблетка» накладывается на поле ввода).
+  useEffect(() => {
+    document.body.classList.add('thread-open')
+    return () => document.body.classList.remove('thread-open')
+  }, [])
+
   // Автопрокрутка вниз при появлении новых сообщений.
   useEffect(() => {
     const el = bodyRef.current
