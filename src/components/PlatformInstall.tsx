@@ -53,7 +53,7 @@ export default function PlatformInstall({ subscriptionUrl }: { subscriptionUrl?:
         </div>
         <button className="btn btn-primary btn-lg" onClick={download}>
           <IconDownload size={22} />
-          Установить {app.app}
+          Установить
         </button>
         <button
           className="btn btn-secondary btn-lg"
