@@ -17,6 +17,7 @@ export default function AdminSupportScreen() {
     () => api.admin.tickets(onlyActive),
     POLL_MS,
     openId === null, // пока открыт тред — ленту не поллим
+    [onlyActive], // смена сегмента «Активные/Все» → немедленный перезапрос
   )
 
   const tickets = data?.tickets ?? []

@@ -8,10 +8,13 @@ type State<T> = {
 
 // Периодически дёргает fetcher (для лент обращений/треда). Очищает таймер при
 // размонтировании и пропускает setState после unmount. Управляется флагом enabled.
+// deps — значения, при смене которых нужен немедленный перезапрос (напр. фильтр
+// ленты): без них смена параметра fetcher подхватилась бы лишь на следующем тике.
 export function usePolling<T>(
   fetcher: () => Promise<T>,
   intervalMs: number,
   enabled = true,
+  deps: readonly unknown[] = [],
 ): State<T> & { refresh: () => Promise<void> } {
   const [state, setState] = useState<State<T>>({ data: null, loading: true, error: null })
   const fetcherRef = useRef(fetcher)
@@ -37,7 +40,9 @@ export function usePolling<T>(
       aliveRef.current = false
       clearInterval(id)
     }
-  }, [enabled, intervalMs, refresh])
+    // deps добавлены намеренно (динамический список) — exhaustive-deps их не видит.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, intervalMs, refresh, ...deps])
 
   return { ...state, refresh }
 }

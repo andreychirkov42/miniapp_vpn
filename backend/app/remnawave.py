@@ -38,6 +38,22 @@ def _extract_users(payload) -> list[dict]:
     return []
 
 
+def _extract_devices(payload) -> list[dict]:
+    """Достаёт список устройств (HWID) из ответа панели, устойчиво к форме.
+
+    Панель может вернуть {"devices": [...], "total": N}, голый список или один
+    объект. Берём только записи с непустым hwid.
+    """
+    if isinstance(payload, dict):
+        devices = payload.get("devices")
+        if isinstance(devices, list):
+            return [d for d in devices if isinstance(d, dict) and d.get("hwid")]
+        return [payload] if payload.get("hwid") else []
+    if isinstance(payload, list):
+        return [d for d in payload if isinstance(d, dict) and d.get("hwid")]
+    return []
+
+
 def _clean_payload(payload: dict) -> dict:
     """Убирает служебные mock-поля (с префиксом «_») перед отправкой в панель.
 
@@ -148,6 +164,15 @@ class RealRemnawave:
             return int(res.get("total") or 0)
         return 0
 
+    async def get_devices(self, uuid: str) -> list[dict]:
+        res = await self._request("GET", f"/hwid/devices/{uuid}")
+        return _extract_devices(res)
+
+    async def delete_device(self, uuid: str, hwid: str) -> None:
+        await self._request(
+            "POST", "/hwid/devices/delete", json={"userUuid": uuid, "hwid": hwid}
+        )
+
 
 # --------------------------------------------------------------------------- #
 # Mock client (in-memory, per Telegram id)                                    #
@@ -156,6 +181,7 @@ class MockRemnawave:
     def __init__(self, settings: Settings):
         self._settings = settings
         self._db: dict[int, list[dict]] = {}
+        self._devices: dict[str, list[dict]] = {}  # uuid -> список устройств (HWID)
 
     def _seed(self, telegram_id: int) -> list[dict]:
         domain = self._settings.subscription_domain or "https://sub.akenai.example"
@@ -239,8 +265,30 @@ class MockRemnawave:
                 target[key] = payload[key]
         return target
 
+    def _seed_devices(self, uuid: str) -> list[dict]:
+        """Демо-устройства, чтобы раздел «Устройства» был наполнен на моке."""
+        base = _now()
+        short = uuid.split("-")[0]
+        devices = [
+            {"hwid": f"{short}-ios", "platform": "iOS", "deviceModel": "iPhone 14 Pro",
+             "createdAt": _iso(base - timedelta(days=6))},
+            {"hwid": f"{short}-macos", "platform": "macOS", "deviceModel": "MacBook Air",
+             "createdAt": _iso(base - timedelta(days=2))},
+            {"hwid": f"{short}-android", "platform": "Android", "deviceModel": "Pixel 7",
+             "createdAt": _iso(base - timedelta(hours=5))},
+        ]
+        self._devices[uuid] = devices
+        return devices
+
+    async def get_devices(self, uuid: str) -> list[dict]:
+        return self._devices[uuid] if uuid in self._devices else self._seed_devices(uuid)
+
+    async def delete_device(self, uuid: str, hwid: str) -> None:
+        current = self._devices[uuid] if uuid in self._devices else self._seed_devices(uuid)
+        self._devices[uuid] = [d for d in current if d.get("hwid") != hwid]
+
     async def get_hwid_count(self, uuid: str) -> int:
-        return int(self._devices.get(uuid, 0)) if hasattr(self, "_devices") else 0
+        return len(self._devices[uuid] if uuid in self._devices else self._seed_devices(uuid))
 
 
 def make_client(settings: Settings):

@@ -37,6 +37,41 @@
   color-scheme: light;
 }
 
+/* ---- Тёмная тема (ставится data-theme="dark" по теме устройства/Telegram) ---- */
+[data-theme='dark'] {
+  --bg: #0c1311;
+  --bg-glow: rgba(22, 179, 100, 0.12);
+  --surface: #151d19;
+  --surface-2: #1a231f;
+  --surface-3: #212c27;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-2: rgba(255, 255, 255, 0.12);
+
+  --text: #e9f1ed;
+  --text-dim: #9bada5;
+  --text-muted: #6e7f77;
+
+  --green: #1bbd6a;
+  --green-strong: #16b364;
+  --green-deep: #4ade80; /* светлая зелень — для текста на тёмном soft-фоне */
+  --green-soft: rgba(22, 179, 100, 0.14);
+  --green-soft-2: rgba(22, 179, 100, 0.24);
+  --green-ring: rgba(22, 179, 100, 0.3);
+
+  --danger: #ff6b6f;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-green: 0 6px 16px rgba(10, 143, 76, 0.32);
+
+  color-scheme: dark;
+}
+
+/* «Открытое» обращение: светло-розовая плашка из light нечитаема на тёмном */
+[data-theme='dark'] .tk-badge--open {
+  background: rgba(255, 107, 111, 0.16);
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -373,6 +408,21 @@ button {
   line-height: 1.2;
   text-align: center;
   color: var(--text-dim);
+}
+
+/* плашка-кнопка (напр. «устройства» → список устройств) */
+.feature--tap {
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.feature--tap:active {
+  transform: scale(0.97);
+}
+
+.feature--tap:focus-visible {
+  box-shadow: 0 0 0 2px var(--green-ring);
 }
 
 .home-cta {
@@ -1140,6 +1190,94 @@ button {
 
 .pay-row__amount--failed {
   color: var(--danger);
+}
+
+/* ---------- Devices (HWID) ---------- */
+.dev-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.dev-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  text-align: left;
+}
+
+.dev-row__ic {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  background: var(--green-soft);
+  color: var(--green-strong);
+}
+
+.dev-row__txt {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dev-row__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dev-row__sub {
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+
+.dev-row__del {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--danger);
+  background: rgba(229, 72, 77, 0.1);
+  transition: background 0.15s ease;
+}
+
+.dev-row__del.is-confirm {
+  background: var(--danger);
+  color: #fff;
+}
+
+.dev-row__del:disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.dev-empty {
+  width: 100%;
+  padding: 24px 16px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 14px;
+  text-align: center;
 }
 
 /* ---------- Platform install ---------- */

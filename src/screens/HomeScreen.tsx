@@ -1,3 +1,4 @@
+import type { KeyboardEvent } from 'react'
 import { IconBars, IconBolt, IconCalendar, IconDevices, IconPlug, IconPlus, IconRocket } from '../icons'
 import type { Subscription } from '../lib/types'
 
@@ -6,6 +7,7 @@ type Props = {
   onTryFree: () => void
   onAddSubscription: () => void
   onConnect: () => void
+  onShowDevices: () => void
   busyTrial: boolean
 }
 
@@ -31,13 +33,30 @@ function trafficLeft(sub: Subscription): string {
   return left >= 10 || left === Math.floor(left) ? String(Math.round(left)) : left.toFixed(1)
 }
 
+// Enter/Space на плашке-кнопке (role="button") — как клик.
+function onActivate(fn: () => void) {
+  return (e: KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      fn()
+    }
+  }
+}
+
 const offerFeatures = [
   { Icon: IconBolt, label: 'Высокая\nскорость' },
   { Icon: IconDevices, label: '3\nустройства' },
   { Icon: IconBars, label: '100 ГБ\nтрафика' },
 ]
 
-export default function HomeScreen({ sub, onTryFree, onAddSubscription, onConnect, busyTrial }: Props) {
+export default function HomeScreen({
+  sub,
+  onTryFree,
+  onAddSubscription,
+  onConnect,
+  onShowDevices,
+  busyTrial,
+}: Props) {
   const hero = (
     <section className="hero">
       <img className="hero__logo" src="/logo.png" alt="Romb" />
@@ -56,6 +75,7 @@ export default function HomeScreen({ sub, onTryFree, onAddSubscription, onConnec
         Icon: IconDevices,
         value: sub.device_limit === 0 ? String(sub.devices_used) : `${sub.devices_used}/${sub.device_limit}`,
         cap: 'устройств',
+        onClick: onShowDevices, // тап по плашке → список устройств с удалением
       },
       { Icon: IconBars, value: traffic, cap: traffic === '∞' ? 'трафик' : 'ГБ осталось' },
     ]
@@ -63,8 +83,14 @@ export default function HomeScreen({ sub, onTryFree, onAddSubscription, onConnec
       <div className="home">
         {hero}
         <ul className="features">
-          {stats.map(({ Icon, value, cap }) => (
-            <li key={cap} className="feature feature--stat">
+          {stats.map(({ Icon, value, cap, onClick }) => (
+            <li
+              key={cap}
+              className={`feature feature--stat${onClick ? ' feature--tap' : ''}`}
+              {...(onClick
+                ? { role: 'button', tabIndex: 0, onClick, onKeyDown: onActivate(onClick) }
+                : {})}
+            >
               <span className="feature__ic">
                 <Icon size={22} />
               </span>

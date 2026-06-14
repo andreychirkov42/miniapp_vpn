@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import BottomNav, { type Tab } from './components/BottomNav'
 import TrialModal from './components/TrialModal'
 import ConfigModal from './components/ConfigModal'
+import DevicesModal from './components/DevicesModal'
 import InstallModal from './components/InstallModal'
 import HomeScreen from './screens/HomeScreen'
 import SupportScreen from './screens/SupportScreen'
@@ -29,6 +30,7 @@ export default function App() {
   const [trialSuccess, setTrialSuccess] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
   const [configSub, setConfigSub] = useState<Subscription | null>(null)
+  const [devicesSub, setDevicesSub] = useState<Subscription | null>(null)
   const [busyTrial, setBusyTrial] = useState(false)
   const [profileModal, setProfileModal] = useState<ProfileModal | null>(null)
 
@@ -75,6 +77,7 @@ export default function App() {
             onTryFree={handleTryFree}
             onAddSubscription={handleAddSubscription}
             onConnect={() => setConfigSub(subs.find((s) => !s.expired) ?? subs[0] ?? null)}
+            onShowDevices={() => setDevicesSub(subs.find((s) => !s.expired) ?? subs[0] ?? null)}
             busyTrial={busyTrial}
           />
         )}
@@ -102,6 +105,13 @@ export default function App() {
       )}
       {configSub && (
         <ConfigModal sub={configSub} title="Добавить подписку" onClose={() => setConfigSub(null)} />
+      )}
+      {devicesSub && (
+        <DevicesModal
+          sub={devicesSub}
+          onClose={() => setDevicesSub(null)}
+          onChanged={reload}
+        />
       )}
       {profileModal === 'promo' && <PromoModal onClose={() => setProfileModal(null)} />}
       {profileModal === 'referral' && <ReferralModal onClose={() => setProfileModal(null)} />}

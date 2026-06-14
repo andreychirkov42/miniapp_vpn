@@ -1,6 +1,7 @@
 import { getInitData } from './telegram'
 import type {
   ConfigResponse,
+  DeviceListResponse,
   MeResponse,
   Subscription,
   SupportResponse,
@@ -40,6 +41,12 @@ export const api = {
   renew: (uuid: string) =>
     request<Subscription>(`/api/subscriptions/${uuid}/renew`, { method: 'POST' }),
   config: (uuid: string) => request<ConfigResponse>(`/api/subscriptions/${uuid}/config`),
+  devices: (uuid: string) => request<DeviceListResponse>(`/api/subscriptions/${uuid}/devices`),
+  deleteDevice: (uuid: string, hwid: string) =>
+    request<DeviceListResponse>(`/api/subscriptions/${uuid}/devices/delete`, {
+      method: 'POST',
+      body: JSON.stringify({ hwid }),
+    }),
   // ticketId не задан → создаётся новое обращение; иначе — дописываем в тред
   support: (message: string, ticketId?: number) =>
     request<SupportResponse>('/api/support', {

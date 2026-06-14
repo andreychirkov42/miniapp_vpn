@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timedelta, timezone
 
 from .config import Settings
-from .schemas import Subscription
+from .schemas import Device, Subscription
 
 GB = 1024**3
 
@@ -80,6 +80,19 @@ def map_subscription(raw: dict, index: int) -> Subscription:
 
 def map_all(raws: list[dict]) -> list[Subscription]:
     return [map_subscription(r, i) for i, r in enumerate(raws)]
+
+
+def map_device(raw: dict) -> Device:
+    return Device(
+        hwid=str(raw.get("hwid") or ""),
+        platform=str(raw.get("platform") or ""),
+        device_model=str(raw.get("deviceModel") or ""),
+        created_at=raw.get("createdAt") or None,
+    )
+
+
+def map_devices(raws: list[dict]) -> list[Device]:
+    return [map_device(r) for r in raws if r.get("hwid")]
 
 
 # Remnawave username: 6-34 символа, латиница/цифры/_/- . Telegram-хэндл (после @)

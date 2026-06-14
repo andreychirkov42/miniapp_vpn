@@ -38,6 +38,21 @@ class ConfigResponse(BaseModel):
     subscription_url: str
 
 
+class Device(BaseModel):
+    hwid: str
+    platform: str = ""
+    device_model: str = ""
+    created_at: str | None = None  # ISO
+
+
+class DeviceListResponse(BaseModel):
+    devices: list[Device]
+
+
+class DeviceDeleteRequest(BaseModel):
+    hwid: str = Field(min_length=1)
+
+
 class SupportRequest(BaseModel):
     message: str = Field(min_length=1, max_length=2000)
     # None → создать новое обращение; иначе — дописать в существующий тикет юзера

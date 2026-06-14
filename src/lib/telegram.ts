@@ -10,6 +10,8 @@ type TgWebApp = {
   HapticFeedback?: { impactOccurred: (s: string) => void; notificationOccurred: (s: string) => void }
   colorScheme?: string
   platform?: string
+  onEvent?: (event: string, handler: () => void) => void
+  offEvent?: (event: string, handler: () => void) => void
 }
 
 export function tg(): TgWebApp | null {

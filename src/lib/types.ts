@@ -29,6 +29,17 @@ export type ConfigResponse = {
   subscription_url: string
 }
 
+export type Device = {
+  hwid: string
+  platform: string
+  device_model: string
+  created_at: string | null
+}
+
+export type DeviceListResponse = {
+  devices: Device[]
+}
+
 export type SupportResponse = {
   ok: boolean
   ticket_id: number

@@ -8,6 +8,8 @@ from ..db import get_db
 from ..remnawave import RemnawaveError, get_client
 from ..schemas import (
     ConfigResponse,
+    DeviceDeleteRequest,
+    DeviceListResponse,
     MeResponse,
     Subscription,
     SupportRequest,
@@ -103,6 +105,41 @@ async def get_config(
         raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc
     url = str(raw.get("subscriptionUrl") or "")
     return ConfigResponse(subscription_url=url)
+
+
+@router.get("/subscriptions/{uuid}/devices", response_model=DeviceListResponse)
+async def list_devices(
+    uuid: str,
+    user: TelegramUser = Depends(require_telegram_user),
+    client=Depends(_client),
+):
+    try:
+        raw = await _find_user(client, user.telegram_id, uuid)
+        devices = await client.get_devices(raw["uuid"])
+    except RemnawaveError as exc:
+        raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc
+    return DeviceListResponse(devices=service.map_devices(devices))
+
+
+@router.post("/subscriptions/{uuid}/devices/delete", response_model=DeviceListResponse)
+async def delete_device(
+    uuid: str,
+    payload: DeviceDeleteRequest,
+    user: TelegramUser = Depends(require_telegram_user),
+    client=Depends(_client),
+):
+    """Удаляет одно устройство (HWID) и возвращает обновлённый список.
+
+    Владелец подписки проверяется через _find_user (uuid привязан к telegram_id),
+    поэтому удалить можно только своё устройство.
+    """
+    try:
+        raw = await _find_user(client, user.telegram_id, uuid)
+        await client.delete_device(raw["uuid"], payload.hwid)
+        devices = await client.get_devices(raw["uuid"])
+    except RemnawaveError as exc:
+        raise HTTPException(status_code=502, detail=f"panel error: {exc}") from exc
+    return DeviceListResponse(devices=service.map_devices(devices))
 
 
 @router.post("/support", response_model=SupportResponse)
