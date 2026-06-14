@@ -7,8 +7,6 @@ import InstallModal from './components/InstallModal'
 import HomeScreen from './screens/HomeScreen'
 import SupportScreen from './screens/SupportScreen'
 import ProfileScreen, { type ProfileModal } from './screens/ProfileScreen'
-import PromoModal from './components/PromoModal'
-import ReferralModal from './components/ReferralModal'
 import PaymentsModal from './components/PaymentsModal'
 import { useSubscriptions } from './hooks/useSubscriptions'
 import { initTelegram, haptic, openBot, getInitData } from './lib/telegram'
@@ -113,8 +111,6 @@ export default function App() {
           onChanged={reload}
         />
       )}
-      {profileModal === 'promo' && <PromoModal onClose={() => setProfileModal(null)} />}
-      {profileModal === 'referral' && <ReferralModal onClose={() => setProfileModal(null)} />}
       {profileModal === 'payments' && <PaymentsModal onClose={() => setProfileModal(null)} />}
     </div>
   )

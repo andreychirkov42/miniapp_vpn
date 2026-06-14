@@ -86,25 +86,11 @@ export type Payment = {
 export type ProfileItem = {
   id: string
   title: string
-  icon:
-    | 'gift'
-    | 'rss'
-    | 'send'
-    | 'shield'
-    | 'doc'
-    | 'heart'
-    | 'wallet'
-    | 'export'
-    | 'question'
-    | 'login'
-    | 'card'
+  icon: 'rss' | 'send' | 'shield' | 'doc' | 'export' | 'question' | 'login' | 'card'
 }
 
 // Единый список профиля (без секций). Без «Вход в систему» и «Добавить на рабочий стол».
 export const profileList: ProfileItem[] = [
-  { id: 'promo', title: 'Применить промокод', icon: 'gift' },
-  { id: 'referral', title: 'Реферальная система', icon: 'heart' },
-  { id: 'partner', title: 'Партнёрская программа', icon: 'wallet' },
   { id: 'payments', title: 'Платежи', icon: 'card' },
   { id: 'news', title: 'Новости', icon: 'rss' },
   { id: 'channel', title: 'Канал', icon: 'send' },

@@ -4,35 +4,29 @@ import {
   IconCard,
   IconChevronRight,
   IconDoc,
-  IconGift,
-  IconHeart,
   IconQuestion,
   IconRss,
   IconSend,
   IconShield,
   IconUser,
-  IconWallet,
 } from '../icons'
 
 const itemIcon = {
-  gift: IconGift,
   rss: IconRss,
   send: IconSend,
   shield: IconShield,
   doc: IconDoc,
-  heart: IconHeart,
-  wallet: IconWallet,
   export: IconShield,
   question: IconQuestion,
   login: IconShield,
   card: IconCard,
 }
 
-export type ProfileModal = 'promo' | 'referral' | 'payments'
+export type ProfileModal = 'payments'
 
 export default function ProfileScreen({ onOpenModal }: { onOpenModal: (m: ProfileModal) => void }) {
   const handle = (id: string) => {
-    if (id === 'promo' || id === 'referral' || id === 'payments') onOpenModal(id)
+    if (id === 'payments') onOpenModal('payments')
     else haptic('light')
   }
 
