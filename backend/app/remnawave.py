@@ -148,6 +148,12 @@ class RealRemnawave:
         res = await self._request("GET", f"/users/by-telegram-id/{telegram_id}")
         return _extract_users(res)
 
+    async def get_user_by_username(self, username: str) -> dict | None:
+        """Поиск по username панели (= Telegram-хэндлу). Один юзер или None."""
+        res = await self._request("GET", f"/users/by-username/{username}")
+        users = _extract_users(res)
+        return users[0] if users else None
+
     async def get_all_users(self, page_size: int = 500) -> list[dict]:
         """Все подписки панели (постранично). Для напоминаний об окончании."""
         users: list[dict] = []
@@ -229,14 +235,15 @@ class MockRemnawave:
         self._db[telegram_id] = users
         return users
 
-    def _make(self, telegram_id, *, label, name, traffic_limit, used, expire, device_limit, domain):
+    def _make(self, telegram_id, *, label, name, traffic_limit, used, expire, device_limit,
+              domain, username=None):
         full = str(uuidlib.uuid4())
         short = full.split("-")[0]
         sub_url = self._settings.mock_subscription_url or f"{domain}/{short}"
         return {
             "uuid": full,
             "shortUuid": short,
-            "username": f"tg_{telegram_id}_{short}",
+            "username": username or f"tg_{telegram_id}_{short}",
             "telegramId": telegram_id,
             "status": "ACTIVE",
             "trafficLimitBytes": traffic_limit,
@@ -250,6 +257,13 @@ class MockRemnawave:
 
     async def get_users_by_telegram_id(self, telegram_id: int) -> list[dict]:
         return self._db.get(telegram_id) or self._seed(telegram_id)
+
+    async def get_user_by_username(self, username: str) -> dict | None:
+        for users in self._db.values():
+            for u in users:
+                if u.get("username") == username:
+                    return u
+        return None
 
     async def get_all_users(self, page_size: int = 500) -> list[dict]:
         return [u for users in self._db.values() for u in users]
@@ -274,6 +288,7 @@ class MockRemnawave:
             expire=expire,
             device_limit=payload.get("hwidDeviceLimit", 0),
             domain=domain,
+            username=payload.get("username"),
         )
         self._db.setdefault(telegram_id, [])
         self._db[telegram_id].append(user)

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from datetime import datetime, timezone
 
 from aiogram import Bot, Dispatcher, F
@@ -156,6 +157,43 @@ def _renew_keyboard(telegram_id: int, months: int) -> InlineKeyboardMarkup:
     )
 
 
+async def _offer_renewal(
+    message: Message, *, target_id: int, name: str, handle: str, not_found_hint: str
+) -> None:
+    """Карточка продления по Telegram ID: ищет подписки и рисует кнопку.
+
+    Общая для двух входов — пересылки сообщения и ввода @username оператором.
+    """
+    months = settings.renew_months
+    try:
+        users = await get_client().get_users_by_telegram_id(target_id)
+    except RemnawaveError as exc:
+        logger.warning("renew lookup failed tg=%s: %s", target_id, exc)
+        await message.answer("⚠️ Не удалось получить данные из панели. Попробуйте позже.")
+        return
+
+    if not users:
+        await message.answer(
+            f"🔎 Подписка не найдена.\n\n👤 <b>{name}</b>{handle}\n🆔 <code>{target_id}</code>\n\n"
+            f"{not_found_hint}"
+        )
+        return
+
+    lines = [
+        "🧾 <b>Продление подписки</b>",
+        "",
+        f"👤 <b>{name}</b>{handle}",
+        f"🆔 <code>{target_id}</code>",
+        "",
+    ]
+    for i, u in enumerate(users, 1):
+        prefix = f"{i}. " if len(users) > 1 else "Действует до: "
+        lines.append(f"{prefix}{_fmt_expire(u)}")
+    lines.append("")
+    lines.append(f"Нажмите кнопку, чтобы продлить на <b>{months} {_months_word(months)}</b>.")
+    await message.answer("\n".join(lines), reply_markup=_renew_keyboard(target_id, months))
+
+
 @dp.message(F.forward_origin)
 async def on_forward(message: Message) -> None:
     # Фича только для операторов; обычным пользователям молчим.
@@ -166,47 +204,74 @@ async def on_forward(message: Message) -> None:
     if isinstance(origin, MessageOriginHiddenUser):
         await message.answer(
             "🔒 Пользователь скрыл аккаунт при пересылке — Telegram не отдаёт его ID.\n"
-            "Попросите прислать сообщение ещё раз, отключив приватность пересылки."
+            "Отправьте его <b>@username</b> (через собаку) — найдём по нему."
         )
         return
     if not isinstance(origin, MessageOriginUser):
         await message.answer(
             "↪️ Это не пересланное сообщение от пользователя.\n"
-            "Перешлите сообщение того, кому нужно продлить подписку."
+            "Перешлите сообщение того, кому нужно продлить подписку, или отправьте его @username."
         )
         return
 
     target = origin.sender_user
-    months = settings.renew_months
+    await _offer_renewal(
+        message,
+        target_id=target.id,
+        name=target.first_name or "пользователь",
+        handle=f" (@{target.username})" if target.username else "",
+        not_found_hint="В панели нет пользователя с этим Telegram ID.",
+    )
+
+
+# Оператор шлёт «@ivan_petrov», когда пересылка скрывает ID. Требуем ведущую
+# собаку, чтобы не реагировать на обычные текстовые сообщения. Telegram-хэндл —
+# [A-Za-z0-9_], 5-32 симв.; панель хранит его как username, допускаем от 4.
+_USERNAME_RE = re.compile(r"^@([A-Za-z0-9_]{4,32})$")
+
+
+@dp.message(F.text)
+async def on_username(message: Message) -> None:
+    # Только операторам; остальным молчим (как и forward-хендлер).
+    if message.from_user is None or not _is_admin(message.from_user.id):
+        return
+
+    match = _USERNAME_RE.match((message.text or "").strip())
+    if match is None:
+        return  # не «@username» — не наш кейс, молчим
+    username = match.group(1)
+
     try:
-        users = await get_client().get_users_by_telegram_id(target.id)
+        user = await get_client().get_user_by_username(username)
     except RemnawaveError as exc:
-        logger.warning("renew lookup failed tg=%s: %s", target.id, exc)
+        logger.warning("renew lookup by username failed @%s: %s", username, exc)
         await message.answer("⚠️ Не удалось получить данные из панели. Попробуйте позже.")
         return
 
-    name = target.first_name or "пользователь"
-    handle = f" (@{target.username})" if target.username else ""
-    if not users:
+    if not user:
         await message.answer(
-            f"🔎 Подписка не найдена.\n\n👤 <b>{name}</b>{handle}\n🆔 <code>{target.id}</code>\n\n"
-            "В панели нет пользователя с этим Telegram ID."
+            f"🔎 Пользователь <b>@{username}</b> не найден в панели.\n"
+            "Проверьте написание хэндла или перешлите сообщение пользователя."
         )
         return
 
-    lines = [
-        "🧾 <b>Продление подписки</b>",
-        "",
-        f"👤 <b>{name}</b>{handle}",
-        f"🆔 <code>{target.id}</code>",
-        "",
-    ]
-    for i, u in enumerate(users, 1):
-        prefix = f"{i}. " if len(users) > 1 else "Действует до: "
-        lines.append(f"{prefix}{_fmt_expire(u)}")
-    lines.append("")
-    lines.append(f"Нажмите кнопку, чтобы продлить на <b>{months} {_months_word(months)}</b>.")
-    await message.answer("\n".join(lines), reply_markup=_renew_keyboard(target.id, months))
+    tg_id = user.get("telegramId")
+    if not tg_id:
+        # Подписка есть, но без Telegram ID — продлить через кнопку (она ищет по ID)
+        # нельзя. Такое почти не случается, т.к. юзеры заводятся со своим tg-id.
+        await message.answer(
+            f"🔎 Нашёл <b>@{username}</b>, но у подписки не привязан Telegram ID — "
+            "продлить кнопкой не получится. Перешлите сообщение пользователя."
+        )
+        return
+
+    await _offer_renewal(
+        message,
+        target_id=int(tg_id),
+        name=user.get("username") or username,
+        handle=f" (@{username})",
+        not_found_hint="В панели нет активной подписки для этого пользователя.",
+    )
 
 
 @dp.callback_query(F.data.startswith("renew:"))
