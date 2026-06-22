@@ -42,7 +42,7 @@ logger = logging.getLogger("akenai.bot")
 
 # Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
 # по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
-WEBAPP_VERSION = "20260622c"
+WEBAPP_VERSION = "20260622d"
 
 
 def webapp_info(screen: str | None = None) -> WebAppInfo:

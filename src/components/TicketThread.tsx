@@ -93,12 +93,17 @@ export default function TicketThread({ ticketId, role, onClose }: Props) {
 
       <div className="thread__body" ref={bodyRef}>
         {error && <div className="cfg-error">{error}</div>}
-        {messages.map((m) => (
-          <div key={m.id} className={`bubble ${m.author === 'user' ? 'bubble--user' : 'bubble--admin'}`}>
-            {m.text}
-            <span className="bubble__time">{formatTime(m.created_at)}</span>
-          </div>
-        ))}
+        {messages.map((m) => {
+          // Сторона пузыря — с точки зрения смотрящего: своё сообщение справа
+          // (зелёное), чужое слева. Для админа «своё» — это ответы админа.
+          const isMine = m.author === role
+          return (
+            <div key={m.id} className={`bubble ${isMine ? 'bubble--user' : 'bubble--admin'}`}>
+              {m.text}
+              <span className="bubble__time">{formatTime(m.created_at)}</span>
+            </div>
+          )
+        })}
       </div>
 
       {isClosed ? (
