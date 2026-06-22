@@ -128,6 +128,35 @@ def build_trial_payload(settings: Settings, telegram_id: int, username: str | No
     return payload
 
 
+def days_until_expiry(raw: dict, now: datetime | None = None) -> int | None:
+    """Сколько полных суток осталось до окончания подписки (округление вверх).
+
+    None — если даты нет. Отрицательное — подписка уже истекла.
+    """
+    expire = _parse_dt(raw.get("expireAt"))
+    if expire is None:
+        return None
+    moment = now or datetime.now(timezone.utc)
+    seconds = (expire - moment).total_seconds()
+    return -(-seconds // 86400) if seconds >= 0 else int(seconds // 86400)
+
+
+def is_expiring_soon(raw: dict, within_days: int, now: datetime | None = None) -> bool:
+    """True, если подписка активна и истекает в ближайшие `within_days` суток.
+
+    Уже истёкшие (status EXPIRED или дата в прошлом) исключаются — напоминать о
+    продлении поздно, для них другой сценарий.
+    """
+    if str(raw.get("status") or "").upper() == "EXPIRED":
+        return False
+    expire = _parse_dt(raw.get("expireAt"))
+    if expire is None:
+        return False
+    moment = now or datetime.now(timezone.utc)
+    remaining = expire - moment
+    return timedelta(0) < remaining <= timedelta(days=within_days)
+
+
 def build_renew_payload(raw: dict, settings: Settings) -> dict:
     current = _parse_dt(raw.get("expireAt"))
     now = datetime.now(timezone.utc)

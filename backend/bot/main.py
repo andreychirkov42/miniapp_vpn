@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import datetime, timezone
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
@@ -32,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.config import get_settings  # noqa: E402
 from app import service  # noqa: E402
 from app.remnawave import RemnawaveError, get_client  # noqa: E402
+from bot import notify_store  # noqa: E402
 
 settings = get_settings()
 logging.basicConfig(level=logging.INFO)
@@ -39,7 +41,7 @@ logger = logging.getLogger("akenai.bot")
 
 # Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
 # по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
-WEBAPP_VERSION = "20260622a"
+WEBAPP_VERSION = "20260622b"
 
 
 def webapp_info() -> WebAppInfo:
@@ -262,6 +264,74 @@ async def on_renew(callback: CallbackQuery) -> None:
         logger.info("не удалось уведомить юзера tg=%s: %s", target_id, exc)
 
 
+# ===================== Напоминание об окончании подписки =====================
+# Фоновый цикл рядом с polling: раз в notify_check_interval_hours сканирует панель
+# и пишет пользователям, у кого подписка истекает в ближайшие notify_before_days.
+
+def _expiry_keyboard() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="👤 Открыть личный кабинет", web_app=webapp_info())]
+        ]
+    )
+
+
+def _expiry_text(days_left: int) -> str:
+    return (
+        f"⏳ <b>Подписка заканчивается через {_plural_days(days_left)}</b>\n\n"
+        "Продлите её заранее, чтобы не потерять доступ к серверу — без обрывов "
+        "оплат и интернета.\n\n"
+        "Откройте личный кабинет, чтобы проверить срок и продлить 👇"
+    )
+
+
+async def run_expiry_notifications(bot: Bot, conn) -> None:
+    within = settings.notify_before_days
+    try:
+        users = await get_client().get_all_users()
+    except RemnawaveError as exc:
+        logger.warning("expiry scan failed: %s", exc)
+        return
+
+    now = datetime.now(timezone.utc)
+    sent = 0
+    for u in users:
+        if not service.is_expiring_soon(u, within, now):
+            continue
+        tg_id = u.get("telegramId")
+        uuid = u.get("uuid")
+        expire_at = u.get("expireAt")
+        if not tg_id or not uuid or not expire_at:
+            continue
+        if await notify_store.was_notified(conn, uuid, expire_at):
+            continue
+
+        left = service.days_until_expiry(u, now) or 0
+        try:
+            await bot.send_message(int(tg_id), _expiry_text(left), reply_markup=_expiry_keyboard())
+            sent += 1
+        except (TelegramForbiddenError, TelegramBadRequest) as exc:
+            # Юзер не писал боту или чат недоступен — доставка невозможна. Всё равно
+            # помечаем, чтобы не долбить панель/Telegram каждый цикл этого периода.
+            logger.info("напоминание не доставлено tg=%s: %s", tg_id, exc)
+        await notify_store.mark_notified(conn, uuid, expire_at, int(tg_id))
+        await asyncio.sleep(0.05)  # бережём лимиты Telegram при массовой рассылке
+
+    if sent:
+        logger.info("EXPIRY reminders sent=%s within=%sd", sent, within)
+
+
+async def notify_loop(bot: Bot) -> None:
+    conn = await notify_store.connect(notify_store.notify_db_path(settings.db_path))
+    interval = max(1, settings.notify_check_interval_hours) * 3600
+    while True:
+        try:
+            await run_expiry_notifications(bot, conn)
+        except Exception:  # noqa: BLE001 — цикл не должен падать из-за разовой ошибки
+            logger.exception("expiry notification cycle failed")
+        await asyncio.sleep(interval)
+
+
 async def run() -> None:
     if not settings.bot_token or settings.bot_token.startswith("123456:"):
         raise SystemExit("BOT_TOKEN не задан в backend/.env")
@@ -270,6 +340,8 @@ async def run() -> None:
     # Кабинет открываем только inline-кнопками из /start, а меню-кнопку сбрасываем
     # на дефолт (список команд), чтобы её больше не было.
     await bot.set_chat_menu_button(menu_button=MenuButtonDefault())
+    # Фоновое напоминание об окончании подписки крутится рядом с polling.
+    asyncio.create_task(notify_loop(bot))
     logging.info("Bot polling started")
     await dp.start_polling(bot)
 

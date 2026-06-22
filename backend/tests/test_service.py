@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from app.service import build_renew_months_payload, panel_username
+from app.service import (
+    build_renew_months_payload,
+    days_until_expiry,
+    is_expiring_soon,
+    panel_username,
+)
 
 
 def test_uses_telegram_handle_when_valid():
@@ -48,3 +53,45 @@ def test_renew_months_expired_extends_from_now():
     expected = datetime.now(timezone.utc)
     # ~6 месяцев от сейчас (с запасом на границы месяца)
     assert timedelta(days=175) < (expire - expected) < timedelta(days=190)
+
+
+# --------------------- Напоминание об окончании подписки ---------------------
+
+NOW = datetime(2026, 6, 22, 12, 0, tzinfo=timezone.utc)
+
+
+def _iso(dt: datetime) -> str:
+    return dt.isoformat().replace("+00:00", "Z")
+
+
+def test_expiring_soon_within_window():
+    raw = {"expireAt": _iso(NOW + timedelta(days=2, hours=12))}
+    assert is_expiring_soon(raw, 3, NOW) is True
+
+
+def test_not_expiring_when_far_away():
+    raw = {"expireAt": _iso(NOW + timedelta(days=10))}
+    assert is_expiring_soon(raw, 3, NOW) is False
+
+
+def test_not_expiring_when_already_expired():
+    raw = {"expireAt": _iso(NOW - timedelta(days=1))}
+    assert is_expiring_soon(raw, 3, NOW) is False
+
+
+def test_not_expiring_when_status_expired():
+    raw = {"status": "EXPIRED", "expireAt": _iso(NOW + timedelta(days=1))}
+    assert is_expiring_soon(raw, 3, NOW) is False
+
+
+def test_not_expiring_when_no_date():
+    assert is_expiring_soon({}, 3, NOW) is False
+
+
+def test_days_until_expiry_rounds_up():
+    raw = {"expireAt": _iso(NOW + timedelta(days=2, hours=12))}
+    assert days_until_expiry(raw, NOW) == 3
+
+
+def test_days_until_expiry_none_without_date():
+    assert days_until_expiry({}, NOW) is None

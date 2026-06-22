@@ -795,6 +795,22 @@ button {
   color: var(--text-dim);
 }
 
+/* Кнопка продления подписки в профиле — пока заглушка (disabled). */
+.profile-renew {
+  position: relative;
+}
+
+.profile-renew__soon {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
 .group {
   display: flex;
   flex-direction: column;

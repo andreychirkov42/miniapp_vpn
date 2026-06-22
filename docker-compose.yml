@@ -27,6 +27,13 @@ services:
     working_dir: /app/backend
     command: ["python", "-m", "bot.main"]
     env_file: backend/.env
+    # Дедуп напоминаний (notify.db рядом с DB_PATH) — на своём volume, чтобы
+    # переживать редеплой и не слать повторные напоминания. support.db бот не
+    # трогает; volume отдельный от API, общей записи в один файл нет.
+    environment:
+      DB_PATH: /data/support.db
+    volumes:
+      - bot-data:/data
     restart: always
     depends_on:
       - miniapp
@@ -35,6 +42,7 @@ services:
 
 volumes:
   support-data:
+  bot-data:
 
 networks:
   remnawave-network:

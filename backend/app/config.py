@@ -40,6 +40,11 @@ class Settings(BaseSettings):
     # Срок ручного продления оператором (forward→кнопка в боте), месяцев
     renew_months: int = 6
 
+    # Напоминание об окончании подписки: за сколько дней предупреждать и как
+    # часто бот проверяет панель (фоновый цикл рядом с polling).
+    notify_before_days: int = 3
+    notify_check_interval_hours: int = 6
+
     # Misc
     cors_origins: str = "http://localhost:5173,http://localhost:5180"
     dev_telegram_id: str = ""

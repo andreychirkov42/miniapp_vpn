@@ -148,6 +148,24 @@ class RealRemnawave:
         res = await self._request("GET", f"/users/by-telegram-id/{telegram_id}")
         return _extract_users(res)
 
+    async def get_all_users(self, page_size: int = 500) -> list[dict]:
+        """Все подписки панели (постранично). Для напоминаний об окончании."""
+        users: list[dict] = []
+        start = 0
+        while True:
+            res = await self._request("GET", f"/users?size={page_size}&start={start}")
+            batch = _extract_users(res)
+            if not batch:
+                break
+            users.extend(batch)
+            total = res.get("total") if isinstance(res, dict) else None
+            start += len(batch)
+            if total is not None and start >= int(total):
+                break
+            if len(batch) < page_size:
+                break
+        return users
+
     async def get_user(self, uuid: str) -> dict:
         return await self._request("GET", f"/users/{uuid}")
 
@@ -232,6 +250,9 @@ class MockRemnawave:
 
     async def get_users_by_telegram_id(self, telegram_id: int) -> list[dict]:
         return self._db.get(telegram_id) or self._seed(telegram_id)
+
+    async def get_all_users(self, page_size: int = 500) -> list[dict]:
+        return [u for users in self._db.values() for u in users]
 
     async def get_user(self, uuid: str) -> dict:
         for users in self._db.values():

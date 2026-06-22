@@ -5,6 +5,7 @@ import {
   IconChevronRight,
   IconDoc,
   IconQuestion,
+  IconRocket,
   IconRss,
   IconSend,
   IconShield,
@@ -41,6 +42,14 @@ export default function ProfileScreen({ onOpenModal }: { onOpenModal: (m: Profil
           <div className="profile-head__sub">Управление аккаунтом и бонусами</div>
         </div>
       </div>
+
+      {/* Заглушка: продление подписки. Кнопка пока некликабельна (логика оплаты
+          ещё не подключена) — показываем намерение, но блокируем нажатие. */}
+      <button type="button" className="btn btn-primary profile-renew" disabled aria-disabled="true">
+        <IconRocket size={20} />
+        Продлить подписку
+        <span className="profile-renew__soon">скоро</span>
+      </button>
 
       <div className="group__card">
         {profileList.map((item) => {
