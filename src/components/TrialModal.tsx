@@ -1,11 +1,14 @@
 import { IconPlug } from '../icons'
+import { days } from '../lib/plural'
 
 export default function TrialModal({
   busy,
+  trialDays,
   onConnect,
   onClose,
 }: {
   busy: boolean
+  trialDays: number
   onConnect: () => void
   onClose: () => void
 }) {
@@ -21,7 +24,7 @@ export default function TrialModal({
           активирован!
         </div>
         <div className="modal__sub">
-          Месяц полного доступа — подключите устройство, чтобы начать
+          {days(trialDays)} полного доступа — подключите устройство, чтобы начать
         </div>
         <button className="btn btn-primary" onClick={onConnect} disabled={busy}>
           {busy ? 'Подключаем…' : 'Подключить устройство'}

@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import type { Subscription } from '../lib/types'
 
+// Дефолт срока триала на случай ошибки загрузки — переопределяется значением с бэка.
+const DEFAULT_TRIAL_DAYS = 7
+
 type State = {
   subs: Subscription[]
   isAdmin: boolean
+  trialDays: number
   loading: boolean
   error: string | null
 }
@@ -13,6 +17,7 @@ export function useSubscriptions() {
   const [state, setState] = useState<State>({
     subs: [],
     isAdmin: false,
+    trialDays: DEFAULT_TRIAL_DAYS,
     loading: true,
     error: null,
   })
@@ -21,9 +26,15 @@ export function useSubscriptions() {
     setState((s) => ({ ...s, loading: true, error: null }))
     try {
       const me = await api.me()
-      setState({ subs: me.subscriptions, isAdmin: me.is_admin, loading: false, error: null })
+      setState({
+        subs: me.subscriptions,
+        isAdmin: me.is_admin,
+        trialDays: me.trial_days,
+        loading: false,
+        error: null,
+      })
     } catch (e) {
-      setState({ subs: [], isAdmin: false, loading: false, error: (e as Error).message })
+      setState((s) => ({ ...s, subs: [], isAdmin: false, loading: false, error: (e as Error).message }))
     }
   }, [])
 

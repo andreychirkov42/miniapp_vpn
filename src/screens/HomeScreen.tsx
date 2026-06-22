@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from 'react'
 import { IconBars, IconBolt, IconCalendar, IconDevices, IconPlug, IconPlus, IconRocket } from '../icons'
 import type { Subscription } from '../lib/types'
+import { plural } from '../lib/plural'
 
 type Props = {
   sub: Subscription | null
@@ -9,6 +10,7 @@ type Props = {
   onConnect: () => void
   onShowDevices: () => void
   busyTrial: boolean
+  trialDays: number
 }
 
 const GB = 1024 ** 3
@@ -17,14 +19,6 @@ function daysLeft(iso: string): number {
   if (!iso) return 0
   const diff = new Date(iso).getTime() - Date.now()
   return Math.max(0, Math.ceil(diff / 86_400_000))
-}
-
-function plural(n: number, one: string, few: string, many: string): string {
-  const m10 = n % 10
-  const m100 = n % 100
-  if (m10 === 1 && m100 !== 11) return one
-  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return few
-  return many
 }
 
 function trafficLeft(sub: Subscription): string {
@@ -56,6 +50,7 @@ export default function HomeScreen({
   onConnect,
   onShowDevices,
   busyTrial,
+  trialDays,
 }: Props) {
   const hero = (
     <section className="hero">
@@ -132,7 +127,9 @@ export default function HomeScreen({
             <IconRocket size={22} />
             {busyTrial ? 'Активируем…' : 'Попробовать бесплатно'}
           </button>
-          <span className="cta-caption">Месяц полного доступа — без карты</span>
+          <span className="cta-caption">
+            {trialDays} {plural(trialDays, 'день', 'дня', 'дней')} полного доступа — без карты
+          </span>
         </div>
         <button className="btn btn-secondary btn-lg" onClick={onAddSubscription}>
           <IconPlus size={22} />

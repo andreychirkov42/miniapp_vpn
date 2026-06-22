@@ -23,6 +23,7 @@ export type MeResponse = {
   telegram_id: number
   subscriptions: Subscription[]
   is_admin: boolean
+  trial_days: number
 }
 
 export type ConfigResponse = {

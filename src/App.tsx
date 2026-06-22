@@ -24,7 +24,7 @@ function isNoTelegramContext(): boolean {
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home')
-  const { subs, isAdmin, loading, error, reload, activateTrial } = useSubscriptions()
+  const { subs, isAdmin, trialDays, loading, error, reload, activateTrial } = useSubscriptions()
   const [trialSuccess, setTrialSuccess] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
   const [configSub, setConfigSub] = useState<Subscription | null>(null)
@@ -77,6 +77,7 @@ export default function App() {
             onConnect={() => setConfigSub(subs.find((s) => !s.expired) ?? subs[0] ?? null)}
             onShowDevices={() => setDevicesSub(subs.find((s) => !s.expired) ?? subs[0] ?? null)}
             busyTrial={busyTrial}
+            trialDays={trialDays}
           />
         )}
         {!loading && !error && tab === 'support' && <SupportScreen isAdmin={isAdmin} />}
@@ -88,6 +89,7 @@ export default function App() {
       {trialSuccess && (
         <TrialModal
           busy={false}
+          trialDays={trialDays}
           onConnect={() => {
             setTrialSuccess(false)
             setShowInstall(true)

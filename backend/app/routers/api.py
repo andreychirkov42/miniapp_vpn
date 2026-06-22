@@ -42,6 +42,7 @@ async def _find_user(client, telegram_id: int, uuid: str) -> dict:
 async def get_me(
     user: TelegramUser = Depends(require_telegram_user),
     client=Depends(_client),
+    settings: Settings = Depends(get_settings),
 ):
     try:
         raws = await client.get_users_by_telegram_id(user.telegram_id)
@@ -57,6 +58,7 @@ async def get_me(
         telegram_id=user.telegram_id,
         subscriptions=service.map_all(raws),
         is_admin=is_admin(user.telegram_id),
+        trial_days=settings.trial_days,
     )
 
 

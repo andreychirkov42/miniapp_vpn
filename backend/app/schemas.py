@@ -32,6 +32,7 @@ class MeResponse(BaseModel):
     telegram_id: int
     subscriptions: list[Subscription]
     is_admin: bool = False
+    trial_days: int  # срок пробного периода (для текстов на фронте)
 
 
 class ConfigResponse(BaseModel):
