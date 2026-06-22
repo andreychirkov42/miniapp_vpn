@@ -3,6 +3,7 @@ implements the trial / renew business logic."""
 
 from __future__ import annotations
 
+import calendar
 import re
 from datetime import datetime, timedelta, timezone
 
@@ -132,6 +133,31 @@ def build_renew_payload(raw: dict, settings: Settings) -> dict:
     now = datetime.now(timezone.utc)
     base = current if current and current > now else now
     new_expire = base + timedelta(days=settings.renew_days)
+    return {
+        "uuid": raw["uuid"],
+        "expireAt": new_expire.isoformat().replace("+00:00", "Z"),
+        "status": "ACTIVE",
+    }
+
+
+def _add_months(moment: datetime, months: int) -> datetime:
+    """Прибавляет calendar-месяцы (переход года, обрезка коротких месяцев)."""
+    month_index = moment.month - 1 + months
+    year = moment.year + month_index // 12
+    month = month_index % 12 + 1
+    day = min(moment.day, calendar.monthrange(year, month)[1])
+    return moment.replace(year=year, month=month, day=day)
+
+
+def build_renew_months_payload(raw: dict, months: int) -> dict:
+    """Продление на N календарных месяцев (для ручного продления оператором).
+
+    База = max(текущее окончание, сейчас) — остаток активной подписки не теряется.
+    """
+    current = _parse_dt(raw.get("expireAt"))
+    now = datetime.now(timezone.utc)
+    base = current if current and current > now else now
+    new_expire = _add_months(base, months)
     return {
         "uuid": raw["uuid"],
         "expireAt": new_expire.isoformat().replace("+00:00", "Z"),

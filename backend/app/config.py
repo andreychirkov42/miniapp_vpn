@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     trial_traffic_gb: int = 100
     trial_device_limit: int = 3
     renew_days: int = 30
+    # Срок ручного продления оператором (forward→кнопка в боте), месяцев
+    renew_months: int = 6
 
     # Misc
     cors_origins: str = "http://localhost:5173,http://localhost:5180"
