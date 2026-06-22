@@ -22,8 +22,20 @@ function isNoTelegramContext(): boolean {
   return getInitData() === ''
 }
 
+// Стартовая вкладка из URL (?screen=profile) — бот открывает кабинет сразу на
+// нужном экране, например по кнопке «Открыть личный кабинет» из напоминания.
+function initialTab(): Tab {
+  try {
+    const screen = new URLSearchParams(window.location.search).get('screen')
+    if (screen === 'profile' || screen === 'support' || screen === 'home') return screen
+  } catch {
+    /* нет window/URL — отдаём дефолт */
+  }
+  return 'home'
+}
+
 export default function App() {
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTab] = useState<Tab>(initialTab)
   const { subs, isAdmin, trialDays, loading, error, reload, activateTrial } = useSubscriptions()
   const [trialSuccess, setTrialSuccess] = useState(false)
   const [showInstall, setShowInstall] = useState(false)
