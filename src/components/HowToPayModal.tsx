@@ -1,0 +1,74 @@
+import { IconCard, IconClose } from '../icons'
+
+// Реквизиты статичные — при смене карты/тарифа править здесь.
+const CARD_NUMBER = '4177 4901 8201 5059'
+const RECIPIENT = 'Мирошников В.'
+const SUPPORT_CONTACT = '@rombltd'
+
+export default function HowToPayModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal modal--config" onClick={(e) => e.stopPropagation()}>
+        <button className="modal__close" onClick={onClose} aria-label="close">
+          <IconClose size={22} />
+        </button>
+        <span className="modal__icon">
+          <IconCard size={32} />
+        </span>
+        <div className="modal__title" style={{ fontSize: 22 }}>
+          Как оплатить
+        </div>
+        <div className="modal__sub">Продление «Сервер Киргизия»</div>
+
+        <div className="pay-info">
+          <div className="pay-info__row">
+            <span className="pay-info__label">Срок действия</span>
+            <span className="pay-info__value">6 месяцев</span>
+          </div>
+          <div className="pay-info__row">
+            <span className="pay-info__label">Стоимость</span>
+            <span className="pay-info__value">$19 (1 450 ₽)</span>
+          </div>
+          <div className="pay-info__row">
+            <span className="pay-info__label">Способ оплаты</span>
+            <span className="pay-info__value">Перевод через приложение МБАНК на карту МБАНК</span>
+          </div>
+        </div>
+
+        <div className="pay-steps__title">Инструкция</div>
+        <ol className="pay-steps">
+          <li>Откройте приложение МБАНК.</li>
+          <li>Перейдите в раздел «Переводы» → «По номеру карты».</li>
+          <li>
+            Укажите реквизиты перевода:
+            <div className="pay-req">
+              <div className="pay-req__row">
+                <span className="pay-req__label">Номер карты</span>
+                <span className="pay-req__value">{CARD_NUMBER}</span>
+              </div>
+              <div className="pay-req__row">
+                <span className="pay-req__label">Валюта</span>
+                <span className="pay-req__value">USD</span>
+              </div>
+              <div className="pay-req__row">
+                <span className="pay-req__label">Размер перевода</span>
+                <span className="pay-req__value">$19</span>
+              </div>
+              <div className="pay-req__row">
+                <span className="pay-req__label">Получатель</span>
+                <span className="pay-req__value">{RECIPIENT}</span>
+              </div>
+            </div>
+          </li>
+          <li>
+            Нажмите «Перевести» и отправьте скриншот чека на {SUPPORT_CONTACT}.
+          </li>
+        </ol>
+
+        <button className="btn-text" onClick={onClose}>
+          Закрыть
+        </button>
+      </div>
+    </div>
+  )
+}

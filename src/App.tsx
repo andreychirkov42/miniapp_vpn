@@ -8,6 +8,7 @@ import HomeScreen from './screens/HomeScreen'
 import SupportScreen from './screens/SupportScreen'
 import ProfileScreen, { type ProfileModal } from './screens/ProfileScreen'
 import PaymentsModal from './components/PaymentsModal'
+import HowToPayModal from './components/HowToPayModal'
 import { useSubscriptions } from './hooks/useSubscriptions'
 import { initTelegram, haptic, openBot, getInitData } from './lib/telegram'
 import { BOT_USERNAME } from './data'
@@ -126,6 +127,7 @@ export default function App() {
         />
       )}
       {profileModal === 'payments' && <PaymentsModal onClose={() => setProfileModal(null)} />}
+      {profileModal === 'howToPay' && <HowToPayModal onClose={() => setProfileModal(null)} />}
     </div>
   )
 }

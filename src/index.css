@@ -795,20 +795,9 @@ button {
   color: var(--text-dim);
 }
 
-/* Кнопка продления подписки в профиле — пока заглушка (disabled). */
+/* Кнопка продления подписки в профиле — открывает инструкцию по оплате. */
 .profile-renew {
   position: relative;
-}
-
-.profile-renew__soon {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
-  color: #fff;
 }
 
 .group {
@@ -1206,6 +1195,100 @@ button {
 
 .pay-row__amount--failed {
   color: var(--danger);
+}
+
+/* ---------- Как оплатить (инструкция продления) ---------- */
+.pay-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 4px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--border);
+}
+
+.pay-info__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  text-align: left;
+}
+
+.pay-info__label {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.pay-info__value {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.pay-steps__title {
+  width: 100%;
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-dim);
+  text-align: left;
+}
+
+.pay-steps {
+  width: 100%;
+  margin: 0;
+  padding-left: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.pay-steps li::marker {
+  color: var(--green-deep);
+  font-weight: 700;
+}
+
+.pay-req {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--border);
+}
+
+.pay-req__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 12px;
+  background: var(--surface);
+}
+
+.pay-req__label {
+  flex: 0 0 auto;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.pay-req__value {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
 }
 
 /* ---------- Devices (HWID) ---------- */

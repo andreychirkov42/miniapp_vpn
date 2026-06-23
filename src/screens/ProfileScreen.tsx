@@ -5,7 +5,6 @@ import {
   IconChevronRight,
   IconDoc,
   IconQuestion,
-  IconRocket,
   IconRss,
   IconSend,
   IconShield,
@@ -23,12 +22,17 @@ const itemIcon = {
   card: IconCard,
 }
 
-export type ProfileModal = 'payments'
+export type ProfileModal = 'payments' | 'howToPay'
 
 export default function ProfileScreen({ onOpenModal }: { onOpenModal: (m: ProfileModal) => void }) {
   const handle = (id: string) => {
     if (id === 'payments') onOpenModal('payments')
     else haptic('light')
+  }
+
+  const handleHowToPay = () => {
+    haptic('light')
+    onOpenModal('howToPay')
   }
 
   return (
@@ -43,12 +47,11 @@ export default function ProfileScreen({ onOpenModal }: { onOpenModal: (m: Profil
         </div>
       </div>
 
-      {/* Заглушка: продление подписки. Кнопка пока некликабельна (логика оплаты
-          ещё не подключена) — показываем намерение, но блокируем нажатие. */}
-      <button type="button" className="btn btn-primary profile-renew" disabled aria-disabled="true">
-        <IconRocket size={20} />
-        Продлить подписку
-        <span className="profile-renew__soon">скоро</span>
+      {/* Продление подписки: открывает инструкцию по оплате (реквизиты МБАНК).
+          Автоматической оплаты пока нет — перевод вручную + скриншот в поддержку. */}
+      <button type="button" className="btn btn-primary profile-renew" onClick={handleHowToPay}>
+        <IconCard size={20} />
+        Как оплатить
       </button>
 
       <div className="group__card">

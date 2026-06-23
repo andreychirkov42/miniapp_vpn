@@ -42,7 +42,7 @@ logger = logging.getLogger("akenai.bot")
 
 # Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
 # по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
-WEBAPP_VERSION = "20260622d"
+WEBAPP_VERSION = "20260623a"
 
 
 def webapp_info(screen: str | None = None) -> WebAppInfo:
@@ -278,6 +278,14 @@ async def on_username(message: Message) -> None:
     )
 
 
+@dp.callback_query(F.data == "how_to_pay")
+async def on_how_to_pay(callback: CallbackQuery) -> None:
+    """Показывает реквизиты и инструкцию по оплате (кнопка из напоминания)."""
+    await callback.answer()
+    if callback.message is not None:
+        await callback.message.answer(HOW_TO_PAY_TEXT)
+
+
 @dp.callback_query(F.data.startswith("renew:"))
 async def on_renew(callback: CallbackQuery) -> None:
     if callback.from_user is None or not _is_admin(callback.from_user.id):
@@ -337,10 +345,29 @@ async def on_renew(callback: CallbackQuery) -> None:
 # Фоновый цикл рядом с polling: раз в notify_check_interval_hours сканирует панель
 # и пишет пользователям, у кого подписка истекает в ближайшие notify_before_days.
 
+# Текст с реквизитами и инструкцией по оплате продления (показывается по кнопке
+# «Как оплатить?»). Реквизиты статичные — при смене карты/тарифа править здесь.
+HOW_TO_PAY_TEXT = (
+    '🇰🇬 Продление "Сервер КИРГИЗИЯ"\n'
+    "▪️Срок действия - 6 месяцев\n"
+    "▪️Стоимость - $19 (1.450₽)\n"
+    "▪️Способ оплаты: Перевод через приложение МБАНК на карту МБАНК.\n\n"
+    '🇰🇬 Инструкция для оплаты "Сервер КИРГИЗИЯ":\n'
+    "1️⃣ Откройте приложение МБАНК.\n"
+    "2️⃣ Перейдите в раздел «Переводы» → «По номеру карты».\n"
+    "3️⃣ Укажите:\n"
+    "▪️номер карты: 4177 4901 8201 5059\n"
+    "▪️валюта: USD\n"
+    "▪️размер перевода: $19\n"
+    "▫️Получатель: Мирошников В.\n"
+    '4️⃣ Нажмите "Перевести" и отправьте скриншот чека на @rombltd'
+)
+
+
 def _expiry_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="👤 Открыть личный кабинет", web_app=webapp_info("profile"))]
+            [InlineKeyboardButton(text="💳 Как оплатить?", callback_data="how_to_pay")]
         ]
     )
 
@@ -350,7 +377,7 @@ def _expiry_text(days_left: int) -> str:
         f"⏳ <b>Подписка заканчивается через {_plural_days(days_left)}</b>\n\n"
         "Продлите её заранее, чтобы не потерять доступ к серверу — без обрывов "
         "оплат и интернета.\n\n"
-        "Откройте личный кабинет, чтобы проверить срок и продлить 👇"
+        "Нажмите кнопку ниже, чтобы узнать, как оплатить 👇"
     )
 
 
