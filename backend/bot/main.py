@@ -22,12 +22,10 @@ from aiogram.types import (
     CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
-    KeyboardButton,
     Message,
     MessageOriginHiddenUser,
     MessageOriginUser,
     MenuButtonDefault,
-    ReplyKeyboardMarkup,
     TelegramObject,
     User,
     WebAppInfo,
@@ -96,19 +94,6 @@ WELCOME = (
 )
 
 
-def cabinet_reply_keyboard() -> ReplyKeyboardMarkup:
-    # Постоянная клавиатура снизу с web_app-кнопкой «Личный кабинет».
-    # В отличие от inline-кнопок в старых сообщениях (каждое держит свой URL и
-    # «застревает»), reply-клавиатура одна на чат и заменяется любым новым
-    # сообщением — старый URL не накапливается в истории. web_app в reply-кнопке
-    # (приватный чат) отдаёт валидный initData, в отличие от menu-кнопки ☰.
-    return ReplyKeyboardMarkup(
-        keyboard=[[KeyboardButton(text="👤 Личный кабинет", web_app=webapp_info(screen="profile"))]],
-        resize_keyboard=True,
-        is_persistent=True,
-    )
-
-
 def main_keyboard() -> InlineKeyboardMarkup:
     # Все кнопки открывают мини-апп (валидный initData приходит только из inline
     # web_app-кнопок). Отзывы и техподдержка ведут на экран «Поддержка» мини-аппа,
@@ -168,12 +153,6 @@ async def on_start(message: Message) -> None:
     # Доп. страховка к middleware: гарантированно гасим персональную menu-кнопку.
     await _reset_personal_menu(message.bot, message.from_user)
     await message.answer(WELCOME, reply_markup=main_keyboard())
-    # Отдельным сообщением ставим постоянную reply-клавиатуру с «Личным кабинетом» —
-    # она всегда под рукой внизу и самообновляется (см. cabinet_reply_keyboard).
-    await message.answer(
-        "👤 Кнопка <b>«Личный кабинет»</b> теперь всегда под рукой — внизу экрана 👇",
-        reply_markup=cabinet_reply_keyboard(),
-    )
 
 
 @dp.message(Command("my_id"))
