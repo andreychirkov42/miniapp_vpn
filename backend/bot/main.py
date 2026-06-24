@@ -11,6 +11,8 @@ import logging
 import re
 from datetime import datetime, timezone
 
+from typing import Any, Awaitable, Callable
+
 from aiogram import Bot, Dispatcher, F
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -24,6 +26,8 @@ from aiogram.types import (
     MessageOriginHiddenUser,
     MessageOriginUser,
     MenuButtonDefault,
+    TelegramObject,
+    User,
     WebAppInfo,
 )
 
@@ -42,7 +46,7 @@ logger = logging.getLogger("akenai.bot")
 
 # Версия мини-аппа в URL — для сброса кеша WebView Telegram (он кеширует контент
 # по полному URL; смена ?v= заставляет загрузить свежую сборку). Бампать при деплое.
-WEBAPP_VERSION = "20260623a"
+WEBAPP_VERSION = "20260624a"
 
 
 def webapp_info(screen: str | None = None) -> WebAppInfo:
@@ -108,10 +112,46 @@ def main_keyboard() -> InlineKeyboardMarkup:
 dp = Dispatcher()
 
 
+# ===================== Сброс застрявшей персональной menu-кнопки =====================
+# История проблемы: раньше у части пользователей персонально стояла web_app-кнопка ☰
+# на СТАРЫЙ сайт. Глобальный сброс на дефолт (set_chat_menu_button без chat_id, см. run())
+# такие персональные кнопки НЕ перетирает. Поэтому при ЛЮБОМ контакте пользователя с
+# ботом разово (за процесс) сбрасываем его персональную menu-кнопку на дефолт.
+_menu_reset_done: set[int] = set()
+
+
+async def _reset_personal_menu(bot: Bot, user: User | None) -> None:
+    """Один раз за процесс гасит персональную menu-кнопку пользователя (приватный чат)."""
+    if user is None or user.is_bot or user.id in _menu_reset_done:
+        return
+    _menu_reset_done.add(user.id)
+    try:
+        # В приватном диалоге chat_id == user.id.
+        await bot.set_chat_menu_button(chat_id=user.id, menu_button=MenuButtonDefault())
+    except (TelegramBadRequest, TelegramForbiddenError) as exc:
+        logger.info("не удалось сбросить menu-кнопку tg=%s: %s", user.id, exc)
+
+
+async def _menu_reset_middleware(
+    handler: Callable[[TelegramObject, dict[str, Any]], Awaitable[Any]],
+    event: TelegramObject,
+    data: dict[str, Any],
+) -> Any:
+    await _reset_personal_menu(data["bot"], data.get("event_from_user"))
+    return await handler(event, data)
+
+
+# Вешаем на сообщения и колбэки — покрывает /start, любой текст, нажатия inline-кнопок.
+dp.message.outer_middleware(_menu_reset_middleware)
+dp.callback_query.outer_middleware(_menu_reset_middleware)
+
+
 @dp.message(CommandStart())
 async def on_start(message: Message) -> None:
     # Одно сообщение: приветствие с меню действий внутри текста + inline-кнопки.
     # Кабинет открывается только inline-кнопками (валидный initData).
+    # Доп. страховка к middleware: гарантированно гасим персональную menu-кнопку.
+    await _reset_personal_menu(message.bot, message.from_user)
     await message.answer(WELCOME, reply_markup=main_keyboard())
 
 
