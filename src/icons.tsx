@@ -237,6 +237,20 @@ export const IconInfinity = ({ size, ...p }: P) => (
   </svg>
 )
 
+export const IconPhone = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <rect x="6" y="2" width="12" height="20" rx="3" />
+    <path d="M11 18h2" />
+  </svg>
+)
+
+export const IconMonitor = ({ size, ...p }: P) => (
+  <svg {...base(size)} {...p}>
+    <rect x="2" y="3" width="20" height="14" rx="2" />
+    <path d="M8 21h8M12 17v4" />
+  </svg>
+)
+
 /* Akenai "AK" logo mark — bold angular monogram */
 export const LogoAK = (p: SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 280 210" fill="currentColor" {...p}>

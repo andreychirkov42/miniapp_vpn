@@ -1,8 +1,9 @@
 import { useState } from 'react'
-import { INSTALL_GUIDE_URL, supportActions, type SupportAction } from '../data'
-import { haptic, openExternal } from '../lib/telegram'
+import { supportActions, type SupportAction } from '../data'
+import { haptic } from '../lib/telegram'
 import { usePolling } from '../hooks/usePolling'
 import { api } from '../lib/api'
+import GuideModal from '../components/GuideModal'
 import SupportModal from '../components/SupportModal'
 import TicketList from '../components/TicketList'
 import TicketThread from '../components/TicketThread'
@@ -22,6 +23,7 @@ export default function SupportScreen({ isAdmin = false }: { isAdmin?: boolean }
   const [scope, setScope] = useState<'mine' | 'admin'>('mine')
   const [tab, setTab] = useState<'open' | 'history'>('open')
   const [showSupport, setShowSupport] = useState(false)
+  const [showGuide, setShowGuide] = useState(false)
   const [openId, setOpenId] = useState<number | null>(null)
 
   const { data, loading, error, refresh } = usePolling<TicketListResponse>(
@@ -38,7 +40,7 @@ export default function SupportScreen({ isAdmin = false }: { isAdmin?: boolean }
   const handleAction = (action: SupportAction) => {
     haptic('light')
     if (action.id === 'guide') {
-      openExternal(INSTALL_GUIDE_URL)
+      setShowGuide(true)
       return
     }
     setShowSupport(true)
@@ -118,6 +120,8 @@ export default function SupportScreen({ isAdmin = false }: { isAdmin?: boolean }
           }}
         />
       )}
+
+      {showGuide && <GuideModal onClose={() => setShowGuide(false)} />}
     </div>
   )
 }

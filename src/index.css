@@ -1121,6 +1121,68 @@ button {
   text-align: center;
 }
 
+/* ---------- Guide modal (выбор устройства) ---------- */
+.guide-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.guide-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.guide-option:active {
+  background: var(--green-soft);
+  border-color: var(--green-strong);
+  transform: scale(0.985);
+}
+
+.guide-option__ic {
+  flex: 0 0 auto;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--green-soft);
+  color: var(--green-strong);
+}
+
+.guide-option__txt {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.guide-option__title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.guide-option__sub {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.guide-option__chev {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+}
+
 /* ---------- Modal input / promo ---------- */
 .modal-input {
   width: 100%;

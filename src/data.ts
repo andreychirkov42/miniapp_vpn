@@ -40,8 +40,9 @@ export const supportActions: SupportAction[] = [
   { id: 'guide', title: 'Инструкция по установке', sub: 'Пошаговое руководство', icon: 'question' },
 ]
 
-// Ссылка на статью-инструкцию в Telegraph.
-export const INSTALL_GUIDE_URL = 'https://telegra.ph/Kak-podklyuchit-bystryj-i-zashchishchyonnyj-internet-Romb-06-25'
+// Статьи-инструкции в Telegraph: отдельно для iPhone/iOS и для компьютеров/Android.
+export const INSTALL_GUIDE_IOS_URL = 'https://telegra.ph/Kak-podklyuchit-bystryj-i-zashchishchyonnyj-internet-Romb-06-25'
+export const INSTALL_GUIDE_DESKTOP_URL = 'https://telegra.ph/Kak-podklyuchit-VPN-cherez-FLClash-na-kompyutere-06-25'
 
 export type PlatformId = 'ios' | 'android' | 'windows' | 'macos' | 'linux'
 
