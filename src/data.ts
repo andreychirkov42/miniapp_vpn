@@ -40,8 +40,8 @@ export const supportActions: SupportAction[] = [
   { id: 'guide', title: 'Инструкция по установке', sub: 'Пошаговое руководство', icon: 'question' },
 ]
 
-// Ссылка на статью-инструкцию в Telegraph. TODO: заменить на финальный URL.
-export const INSTALL_GUIDE_URL = 'https://telegra.ph/Instrukciya-po-ustanovke-01-01'
+// Ссылка на статью-инструкцию в Telegraph.
+export const INSTALL_GUIDE_URL = 'https://telegra.ph/Kak-podklyuchit-bystryj-i-zashchishchyonnyj-internet-Romb-06-25'
 
 export type PlatformId = 'ios' | 'android' | 'windows' | 'macos' | 'linux'
 
