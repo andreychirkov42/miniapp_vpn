@@ -1,11 +1,24 @@
-import { IconCard, IconClose } from '../icons'
+import { useState } from 'react'
+import { copyToClipboard, haptic } from '../lib/telegram'
+import { IconCard, IconCheck, IconClose, IconDoc } from '../icons'
 
 // Реквизиты статичные — при смене карты/тарифа править здесь.
 const CARD_NUMBER = '4177 4901 8201 5059'
 const RECIPIENT = 'Мирошников В.'
-const SUPPORT_CONTACT = '@rombltd'
 
 export default function HowToPayModal({ onClose }: { onClose: () => void }) {
+  const [copied, setCopied] = useState(false)
+
+  const copyCard = () => {
+    // В буфер кладём номер без пробелов — так удобнее вставлять в банковское поле.
+    const ok = copyToClipboard(CARD_NUMBER.replace(/\s/g, ''))
+    haptic(ok ? 'success' : 'error')
+    if (ok) {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1800)
+    }
+  }
+
   return (
     <div className="overlay" onClick={onClose}>
       <div className="modal modal--config" onClick={(e) => e.stopPropagation()}>
@@ -42,10 +55,21 @@ export default function HowToPayModal({ onClose }: { onClose: () => void }) {
           <li>
             Укажите реквизиты перевода:
             <div className="pay-req">
-              <div className="pay-req__row">
+              <button
+                type="button"
+                className="pay-req__row pay-req__row--copy"
+                onClick={copyCard}
+                aria-label="Скопировать номер карты"
+              >
                 <span className="pay-req__label">Номер карты</span>
-                <span className="pay-req__value">{CARD_NUMBER}</span>
-              </div>
+                <span className="pay-req__value">
+                  {CARD_NUMBER}
+                  <span className="pay-req__copy">
+                    {copied ? <IconCheck size={15} /> : <IconDoc size={15} />}
+                    {copied ? 'Скопировано' : 'Копировать'}
+                  </span>
+                </span>
+              </button>
               <div className="pay-req__row">
                 <span className="pay-req__label">Валюта</span>
                 <span className="pay-req__value">USD</span>
@@ -61,7 +85,8 @@ export default function HowToPayModal({ onClose }: { onClose: () => void }) {
             </div>
           </li>
           <li>
-            Нажмите «Перевести» и отправьте скриншот чека на {SUPPORT_CONTACT}.
+            Нажмите «Перевести» и отправьте скриншот чека в поддержку прямо в приложении
+            (раздел «Поддержка» → «Новое обращение»).
           </li>
         </ol>
 

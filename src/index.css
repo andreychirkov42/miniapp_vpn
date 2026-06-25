@@ -1301,6 +1301,37 @@ button {
   text-align: right;
 }
 
+/* Строка номера карты — кликабельна, копирует номер в буфер */
+.pay-req__row--copy {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  align-items: center;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pay-req__row--copy:active {
+  background: var(--surface-2);
+}
+
+.pay-req__row--copy .pay-req__value {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.pay-req__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-strong);
+}
+
 /* ---------- Devices (HWID) ---------- */
 .dev-list {
   width: 100%;
