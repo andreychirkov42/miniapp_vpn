@@ -7,8 +7,13 @@
 from __future__ import annotations
 
 import html
+from pathlib import Path
 
 import httpx
+
+# Telegram обрезает подпись к фото на 1024 символах — длинный текст уедет в
+# мини-апп, в подпись кладём усечённую версию.
+CAPTION_LIMIT = 1024
 
 
 class TelegramSendError(RuntimeError):
@@ -33,6 +38,29 @@ async def send_message(bot_token: str, chat_id: str, text: str) -> None:
     data = resp.json()
     if not data.get("ok"):
         raise TelegramSendError(f"sendMessage not ok: {data}")
+
+
+async def send_photo(bot_token: str, chat_id: str, photo_path: str, caption: str) -> None:
+    """Отправляет картинку с подписью в чат. Бросает TelegramSendError при сбое."""
+    if not bot_token:
+        raise TelegramSendError("BOT_TOKEN не настроен")
+    if not chat_id:
+        raise TelegramSendError("SUPPORT_CHAT_ID не настроен")
+
+    url = f"https://api.telegram.org/bot{bot_token}/sendPhoto"
+    path = Path(photo_path)
+    async with httpx.AsyncClient(timeout=30) as client:
+        with path.open("rb") as fh:
+            resp = await client.post(
+                url,
+                data={"chat_id": chat_id, "caption": caption[:CAPTION_LIMIT], "parse_mode": "HTML"},
+                files={"photo": (path.name, fh)},
+            )
+    if resp.status_code >= 400:
+        raise TelegramSendError(f"sendPhoto -> {resp.status_code}: {resp.text[:200]}")
+    data = resp.json()
+    if not data.get("ok"):
+        raise TelegramSendError(f"sendPhoto not ok: {data}")
 
 
 def build_alert_text(

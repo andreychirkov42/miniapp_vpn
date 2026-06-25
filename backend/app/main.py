@@ -48,7 +48,7 @@ _CSP = (
     "default-src 'self'; "
     "script-src 'self' https://telegram.org; "
     "style-src 'self' 'unsafe-inline'; "
-    "img-src 'self' data:; "
+    "img-src 'self' data: blob:; "
     "connect-src 'self'; "
     "frame-ancestors https://web.telegram.org https://telegram.org; "
     "base-uri 'self'; "

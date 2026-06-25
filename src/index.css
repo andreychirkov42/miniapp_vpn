@@ -1743,3 +1743,135 @@ button {
   color: var(--text-muted);
 }
 
+/* --- Вложения-картинки в переписке --- */
+
+.bubble__text {
+  display: block;
+}
+
+.bubble__img {
+  display: block;
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  object-fit: cover;
+}
+
+.bubble__img-skeleton {
+  width: 180px;
+  height: 120px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+  background: linear-gradient(100deg, rgba(127, 127, 127, 0.12), rgba(127, 127, 127, 0.22), rgba(127, 127, 127, 0.12));
+  background-size: 200% 100%;
+  animation: attach-shimmer 1.2s ease-in-out infinite;
+}
+
+@keyframes attach-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.bubble__img-fail {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+/* Композер с превью вложения над полем ввода */
+.thread__composer-wrap {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.thread__composer-wrap .thread__composer {
+  border-top: none;
+}
+
+.thread__attach {
+  align-self: flex-end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border-2);
+}
+
+/* Кнопка «Прикрепить скриншот» в модалке нового обращения */
+.attach-add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-2);
+}
+
+/* Превью выбранного, но ещё не отправленного файла */
+.attach-preview {
+  position: relative;
+  margin-top: 10px;
+  width: fit-content;
+}
+
+.attach-preview img {
+  max-width: 140px;
+  max-height: 140px;
+  border-radius: 12px;
+  display: block;
+}
+
+.attach-preview--composer {
+  padding: 10px 16px 0;
+}
+
+.attach-preview__remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.65);
+}
+
+.attach-preview--composer .attach-preview__remove {
+  top: 4px;
+  right: 10px;
+}
+
+/* Полноэкранный просмотр картинки по тапу */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.lightbox img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+}
+

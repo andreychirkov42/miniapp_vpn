@@ -66,6 +66,8 @@ export type TicketMessage = {
   author: 'user' | 'admin'
   text: string
   created_at: string
+  // путь защищённого эндпоинта с картинкой-вложением (фронт догружает с initData)
+  attachment_url?: string | null
 }
 
 export type TicketDetail = Ticket & {

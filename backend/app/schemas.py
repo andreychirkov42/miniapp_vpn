@@ -54,12 +54,6 @@ class DeviceDeleteRequest(BaseModel):
     hwid: str = Field(min_length=1)
 
 
-class SupportRequest(BaseModel):
-    message: str = Field(min_length=1, max_length=2000)
-    # None → создать новое обращение; иначе — дописать в существующий тикет юзера
-    ticket_id: int | None = None
-
-
 class SupportResponse(BaseModel):
     ok: bool
     ticket_id: int
@@ -70,6 +64,8 @@ class TicketMessage(BaseModel):
     author: str  # user | admin
     text: str
     created_at: str
+    # URL защищённого эндпоинта с картинкой-вложением, либо None
+    attachment_url: str | None = None
 
 
 class Ticket(BaseModel):
@@ -91,7 +87,3 @@ class TicketDetail(Ticket):
 
 class TicketListResponse(BaseModel):
     tickets: list[Ticket]
-
-
-class AdminReplyRequest(BaseModel):
-    message: str = Field(min_length=1, max_length=2000)

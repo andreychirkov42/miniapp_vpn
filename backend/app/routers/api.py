@@ -1,7 +1,8 @@
 import logging
 
 import aiosqlite
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 
 from ..config import Settings, get_settings
 from ..db import get_db
@@ -12,16 +13,18 @@ from ..schemas import (
     DeviceListResponse,
     MeResponse,
     Subscription,
-    SupportRequest,
     SupportResponse,
     Ticket,
     TicketDetail,
     TicketListResponse,
 )
 from ..security import TelegramUser, is_admin, require_telegram_user
-from .. import service, support_store, telegram
+from .. import attachments, service, support_store, telegram
 
 logger = logging.getLogger("akenai.api")
+
+# Лимит длины текста обращения (совпадает с maxLength на фронте).
+MESSAGE_MAX = 2000
 
 router = APIRouter(prefix="/api", tags=["subscriptions"])
 
@@ -146,45 +149,108 @@ async def delete_device(
 
 @router.post("/support", response_model=SupportResponse)
 async def send_support(
-    payload: SupportRequest,
+    message: str = Form(default=""),
+    ticket_id: int | None = Form(default=None),
+    file: UploadFile | None = File(default=None),
     user: TelegramUser = Depends(require_telegram_user),
     settings: Settings = Depends(get_settings),
     conn: aiosqlite.Connection = Depends(get_db),
 ):
     """Создаёт новое обращение или дописывает в существующий тикет пользователя.
 
-    Обращение сохраняется в БД (источник истины для раздела «Заявки»), а в чат
-    поддержки уходит только короткий алерт — без падения запроса, если чат
-    недоступен/не настроен (тикет уже сохранён, админ увидит его в мини-аппе).
+    Принимает multipart-форму: текст и/или картинку-вложение. Обращение
+    сохраняется в БД (источник истины для раздела «Заявки»), а в чат поддержки
+    уходит короткий алерт (фото — через sendPhoto) — без падения запроса, если
+    чат недоступен/не настроен (тикет уже сохранён, виден в мини-аппе).
     """
-    if payload.ticket_id is None:
+    text = message.strip()
+    if len(text) > MESSAGE_MAX:
+        raise HTTPException(status_code=422, detail="message too long")
+
+    attach_name = attach_mime = None
+    if file is not None and file.filename:
+        try:
+            attach_name, attach_mime = await attachments.save_upload(
+                file, db_path=settings.db_path
+            )
+        except attachments.AttachmentError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    if not text and attach_name is None:
+        raise HTTPException(status_code=422, detail="empty message")
+
+    if ticket_id is None:
         ticket_id = await support_store.create_ticket(
             conn,
             user_telegram_id=user.telegram_id,
             username=user.username,
             first_name=user.first_name,
-            message=payload.message,
+            message=text,
+            attachment_path=attach_name,
+            attachment_mime=attach_mime,
         )
     else:
-        ticket = await support_store.get_ticket(conn, payload.ticket_id)
+        ticket = await support_store.get_ticket(conn, ticket_id)
         if ticket is None or ticket["user_telegram_id"] != user.telegram_id:
             raise HTTPException(status_code=404, detail="ticket not found")
-        await support_store.add_user_message(conn, payload.ticket_id, payload.message)
-        ticket_id = payload.ticket_id
+        await support_store.add_user_message(
+            conn, ticket_id, text,
+            attachment_path=attach_name,
+            attachment_mime=attach_mime,
+        )
 
     if settings.support_chat_id and settings.bot_token:
         alert = telegram.build_alert_text(
             ticket_id=ticket_id,
             username=user.username,
             first_name=user.first_name,
-            message=payload.message,
+            message=text or "(скриншот)",
         )
         try:
-            await telegram.send_message(settings.bot_token, settings.support_chat_id, alert)
+            if attach_name:
+                path = attachments.resolve(attach_name, db_path=settings.db_path)
+                await telegram.send_photo(
+                    settings.bot_token, settings.support_chat_id, str(path), alert
+                )
+            else:
+                await telegram.send_message(settings.bot_token, settings.support_chat_id, alert)
         except telegram.TelegramSendError as exc:
             logger.warning("support alert delivery failed for ticket %s: %s", ticket_id, exc)
 
     return SupportResponse(ok=True, ticket_id=ticket_id)
+
+
+@router.get("/support/attachments/{message_id}")
+async def get_attachment(
+    message_id: int,
+    user: TelegramUser = Depends(require_telegram_user),
+    settings: Settings = Depends(get_settings),
+    conn: aiosqlite.Connection = Depends(get_db),
+):
+    """Отдаёт картинку-вложение. Доступ: владелец тикета или админ.
+
+    Картинку фронт догружает отдельным запросом с initData в заголовке (тег
+    <img> заголовки слать не умеет), поэтому это обычный защищённый GET.
+    """
+    msg = await support_store.get_message(conn, message_id)
+    if msg is None or not msg.get("attachment_path"):
+        raise HTTPException(status_code=404, detail="attachment not found")
+
+    ticket = await support_store.get_ticket(conn, msg["ticket_id"])
+    if ticket is None:
+        raise HTTPException(status_code=404, detail="attachment not found")
+    if not is_admin(user.telegram_id) and ticket["user_telegram_id"] != user.telegram_id:
+        raise HTTPException(status_code=404, detail="attachment not found")
+
+    path = attachments.resolve(msg["attachment_path"], db_path=settings.db_path)
+    if path is None:
+        raise HTTPException(status_code=404, detail="attachment not found")
+
+    return FileResponse(
+        path,
+        media_type=msg.get("attachment_mime") or "application/octet-stream",
+        content_disposition_type="inline",
+    )
 
 
 @router.get("/support/tickets", response_model=TicketListResponse)

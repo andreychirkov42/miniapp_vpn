@@ -28,6 +28,8 @@ async def create_ticket(
     username: str | None,
     first_name: str | None,
     message: str,
+    attachment_path: str | None = None,
+    attachment_mime: str | None = None,
 ) -> int:
     """Создаёт тикет с первым сообщением пользователя. Возвращает id тикета."""
     ts = _now()
@@ -39,20 +41,29 @@ async def create_ticket(
     ticket_id = cur.lastrowid
     await conn.execute(
         "INSERT INTO ticket_messages (ticket_id, author, admin_telegram_id, text, "
-        "created_at) VALUES (?, 'user', NULL, ?, ?)",
-        (ticket_id, message.strip(), ts),
+        "attachment_path, attachment_mime, created_at) "
+        "VALUES (?, 'user', NULL, ?, ?, ?, ?)",
+        (ticket_id, message.strip(), attachment_path, attachment_mime, ts),
     )
     await conn.commit()
     return int(ticket_id)
 
 
-async def add_user_message(conn: aiosqlite.Connection, ticket_id: int, text: str) -> None:
+async def add_user_message(
+    conn: aiosqlite.Connection,
+    ticket_id: int,
+    text: str,
+    *,
+    attachment_path: str | None = None,
+    attachment_mime: str | None = None,
+) -> None:
     """Добавляет сообщение пользователя и возвращает тикет в статус open."""
     ts = _now()
     await conn.execute(
         "INSERT INTO ticket_messages (ticket_id, author, admin_telegram_id, text, "
-        "created_at) VALUES (?, 'user', NULL, ?, ?)",
-        (ticket_id, text.strip(), ts),
+        "attachment_path, attachment_mime, created_at) "
+        "VALUES (?, 'user', NULL, ?, ?, ?, ?)",
+        (ticket_id, text.strip(), attachment_path, attachment_mime, ts),
     )
     await conn.execute(
         "UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?",
@@ -62,14 +73,21 @@ async def add_user_message(conn: aiosqlite.Connection, ticket_id: int, text: str
 
 
 async def add_admin_message(
-    conn: aiosqlite.Connection, ticket_id: int, admin_telegram_id: int, text: str
+    conn: aiosqlite.Connection,
+    ticket_id: int,
+    admin_telegram_id: int,
+    text: str,
+    *,
+    attachment_path: str | None = None,
+    attachment_mime: str | None = None,
 ) -> None:
     """Добавляет ответ админа и переводит тикет в статус answered."""
     ts = _now()
     await conn.execute(
         "INSERT INTO ticket_messages (ticket_id, author, admin_telegram_id, text, "
-        "created_at) VALUES (?, 'admin', ?, ?, ?)",
-        (ticket_id, admin_telegram_id, text.strip(), ts),
+        "attachment_path, attachment_mime, created_at) "
+        "VALUES (?, 'admin', ?, ?, ?, ?, ?)",
+        (ticket_id, admin_telegram_id, text.strip(), attachment_path, attachment_mime, ts),
     )
     await conn.execute(
         "UPDATE tickets SET status = ?, updated_at = ? WHERE id = ?",
@@ -94,19 +112,39 @@ async def get_ticket(conn: aiosqlite.Connection, ticket_id: int) -> dict | None:
 
 async def _messages(conn: aiosqlite.Connection, ticket_id: int) -> list[dict]:
     cur = await conn.execute(
-        "SELECT id, author, admin_telegram_id, text, created_at FROM ticket_messages "
-        "WHERE ticket_id = ? ORDER BY id ASC",
+        "SELECT id, author, admin_telegram_id, text, attachment_path, attachment_mime, "
+        "created_at FROM ticket_messages WHERE ticket_id = ? ORDER BY id ASC",
         (ticket_id,),
     )
     return [dict(r) for r in await cur.fetchall()]
 
 
+async def get_message(conn: aiosqlite.Connection, message_id: int) -> dict | None:
+    """Одно сообщение переписки (для отдачи вложения по его id)."""
+    cur = await conn.execute(
+        "SELECT id, ticket_id, attachment_path, attachment_mime FROM ticket_messages "
+        "WHERE id = ?",
+        (message_id,),
+    )
+    row = await cur.fetchone()
+    return dict(row) if row else None
+
+
 async def get_with_messages(conn: aiosqlite.Connection, ticket_id: int) -> dict | None:
-    """Тикет вместе со всеми сообщениями переписки, либо None."""
+    """Тикет вместе со всеми сообщениями переписки, либо None.
+
+    К сообщениям с вложением добавляется attachment_url — относительный путь
+    защищённого эндпоинта, по которому фронт догружает картинку.
+    """
     ticket = await get_ticket(conn, ticket_id)
     if ticket is None:
         return None
-    ticket["messages"] = await _messages(conn, ticket_id)
+    messages = await _messages(conn, ticket_id)
+    for m in messages:
+        m["attachment_url"] = (
+            f"/api/support/attachments/{m['id']}" if m.get("attachment_path") else None
+        )
+    ticket["messages"] = messages
     return ticket
 
 

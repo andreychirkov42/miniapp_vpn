@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app import attachments as attachments_module
 from app import db as db_module
 from app import telegram
 from app.db import get_db
@@ -30,6 +31,15 @@ def _no_telegram(monkeypatch):
         return None
 
     monkeypatch.setattr(telegram, "send_message", _noop)
+    monkeypatch.setattr(telegram, "send_photo", _noop)
+
+
+@pytest.fixture(autouse=True)
+def _attachments_tmp(monkeypatch, tmp_path):
+    """Вложения пишем во временную папку, чтобы тесты не трогали рабочую директорию."""
+    monkeypatch.setattr(
+        attachments_module, "attachments_dir", lambda db_path: tmp_path / "attachments"
+    )
 
 
 @pytest.fixture
